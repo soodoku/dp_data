@@ -5,17 +5,23 @@ Version: 0.1.0
 Authors@R: person("Gaurav", "Sood", role = c("aut", "cre"), email = "gsood07@gmail.com")
 Description: Audits, catalogs, standardizes, and exports source data used by
     deliberative-poll research repositories.
-License: MIT + file LICENSE-CODE
+License: MIT + file LICENSE
 Encoding: UTF-8
 Imports:
+    arrow,
     assertr,
     digest,
     dplyr,
     frictionless,
     fs,
+    haven,
     jsonlite,
+    kableExtra,
+    knitr,
+    ltm,
     purrr,
     readr,
+    readxl,
     rlang,
     rprojroot,
     stringr,
@@ -23,5 +29,6 @@ Imports:
     tidyr
 Suggests:
     lintr,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    withr
 Config/testthat/edition: 3

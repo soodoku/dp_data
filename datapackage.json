@@ -6,7 +6,7 @@
   "resources": [
     {
       "name": "artifact_types",
-      "path": "/private/tmp/dp-data-stage/metadata/artifact_types.csv",
+      "path": "metadata/artifact_types.csv",
       "profile": "tabular-data-resource",
       "format": "csv",
       "mediatype": "text/csv",
@@ -33,8 +33,476 @@
       }
     },
     {
+      "name": "archive_collections",
+      "path": "metadata/archive_collections.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "collection_id",
+            "type": "string"
+          },
+          {
+            "name": "archive_prefix",
+            "type": "string"
+          },
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "scope",
+            "type": "string"
+          },
+          {
+            "name": "review_status",
+            "type": "string"
+          },
+          {
+            "name": "notes",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "artifacts",
+      "path": "metadata/artifacts.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "artifact_id",
+            "type": "string"
+          },
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "artifact_type",
+            "type": "string"
+          },
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "location",
+            "type": "string"
+          },
+          {
+            "name": "source_id",
+            "type": "string"
+          },
+          {
+            "name": "original_archive_path",
+            "type": "string"
+          },
+          {
+            "name": "sha256",
+            "type": "string"
+          },
+          {
+            "name": "rights_status",
+            "type": "string"
+          },
+          {
+            "name": "disclosure_status",
+            "type": "string"
+          },
+          {
+            "name": "publication_status",
+            "type": "string"
+          },
+          {
+            "name": "notes",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "canonical_tables",
+      "path": "metadata/canonical_tables.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "table",
+            "type": "string"
+          },
+          {
+            "name": "grain",
+            "type": "string"
+          },
+          {
+            "name": "primary_key",
+            "type": "string"
+          },
+          {
+            "name": "format",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "canonical_columns",
+      "path": "metadata/canonical_columns.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "table",
+            "type": "string"
+          },
+          {
+            "name": "column",
+            "type": "string"
+          },
+          {
+            "name": "arrow_type",
+            "type": "string"
+          },
+          {
+            "name": "nullable",
+            "type": "boolean"
+          },
+          {
+            "name": "key",
+            "type": "boolean"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "knowledge_batteries",
+      "path": "metadata/knowledge_batteries.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "source_id",
+            "type": "string"
+          },
+          {
+            "name": "original_archive_path",
+            "type": "string"
+          },
+          {
+            "name": "respondents",
+            "type": "number"
+          },
+          {
+            "name": "items",
+            "type": "number"
+          },
+          {
+            "name": "pre_columns",
+            "type": "string"
+          },
+          {
+            "name": "post_columns",
+            "type": "string"
+          },
+          {
+            "name": "demographic_column",
+            "type": "string"
+          },
+          {
+            "name": "linkage_status",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "survey_sources",
+      "path": "metadata/survey_sources.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "source_id",
+            "type": "string"
+          },
+          {
+            "name": "archive_path",
+            "type": "string"
+          },
+          {
+            "name": "source_sha256",
+            "type": "string"
+          },
+          {
+            "name": "source_rows",
+            "type": "number"
+          },
+          {
+            "name": "source_columns",
+            "type": "number"
+          },
+          {
+            "name": "public_path",
+            "type": "string"
+          },
+          {
+            "name": "transformation",
+            "type": "string"
+          },
+          {
+            "name": "publication_status",
+            "type": "string"
+          },
+          {
+            "name": "review_note",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "survey_components",
+      "path": "metadata/survey_components.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "source_id",
+            "type": "string"
+          },
+          {
+            "name": "archive_path",
+            "type": "string"
+          },
+          {
+            "name": "source_sha256",
+            "type": "string"
+          },
+          {
+            "name": "source_rows",
+            "type": "number"
+          },
+          {
+            "name": "source_columns",
+            "type": "number"
+          },
+          {
+            "name": "public_path",
+            "type": "string"
+          },
+          {
+            "name": "transformation",
+            "type": "string"
+          },
+          {
+            "name": "publication_status",
+            "type": "string"
+          },
+          {
+            "name": "review_note",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "component_field_exclusions",
+      "path": "metadata/component_field_exclusions.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "source_column",
+            "type": "string"
+          },
+          {
+            "name": "reason",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "source_field_exclusions",
+      "path": "metadata/source_field_exclusions.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "source_column",
+            "type": "string"
+          },
+          {
+            "name": "reason",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "knowledge_items",
+      "path": "metadata/knowledge_items.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "item_id",
+            "type": "string"
+          },
+          {
+            "name": "item_order",
+            "type": "number"
+          },
+          {
+            "name": "wave",
+            "type": "number"
+          },
+          {
+            "name": "source_column",
+            "type": "string"
+          },
+          {
+            "name": "benchmark_column",
+            "type": "string"
+          },
+          {
+            "name": "correct_values",
+            "type": "string"
+          },
+          {
+            "name": "incorrect_values",
+            "type": "string"
+          },
+          {
+            "name": "missing_values",
+            "type": "string"
+          },
+          {
+            "name": "evidence",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "knowledge_join_contracts",
+      "path": "metadata/knowledge_join_contracts.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "left_universe",
+            "type": "string"
+          },
+          {
+            "name": "left_key",
+            "type": "string"
+          },
+          {
+            "name": "right_source_id",
+            "type": "string"
+          },
+          {
+            "name": "right_key",
+            "type": "string"
+          },
+          {
+            "name": "cardinality",
+            "type": "string"
+          },
+          {
+            "name": "expected_left_rows",
+            "type": "number"
+          },
+          {
+            "name": "expected_matches",
+            "type": "number"
+          },
+          {
+            "name": "unmatched_policy",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
       "name": "polls",
-      "path": "/private/tmp/dp-data-stage/metadata/polls.csv",
+      "path": "metadata/polls.csv",
       "profile": "tabular-data-resource",
       "format": "csv",
       "mediatype": "text/csv",
@@ -74,7 +542,7 @@
     },
     {
       "name": "poll_aliases",
-      "path": "/private/tmp/dp-data-stage/metadata/poll_aliases.csv",
+      "path": "metadata/poll_aliases.csv",
       "profile": "tabular-data-resource",
       "format": "csv",
       "mediatype": "text/csv",
@@ -102,7 +570,7 @@
     },
     {
       "name": "source_bundles",
-      "path": "/private/tmp/dp-data-stage/metadata/source_bundles.csv",
+      "path": "metadata/source_bundles.csv",
       "profile": "tabular-data-resource",
       "format": "csv",
       "mediatype": "text/csv",
@@ -146,7 +614,7 @@
     },
     {
       "name": "source_files",
-      "path": "/private/tmp/dp-data-stage/metadata/source_files.csv",
+      "path": "metadata/source_files.csv",
       "profile": "tabular-data-resource",
       "format": "csv",
       "mediatype": "text/csv",
@@ -193,8 +661,80 @@
       }
     },
     {
+      "name": "source_findings",
+      "path": "metadata/source_findings.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "finding_id",
+            "type": "string"
+          },
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "finding_type",
+            "type": "string"
+          },
+          {
+            "name": "evidence",
+            "type": "string"
+          },
+          {
+            "name": "observed",
+            "type": "string"
+          },
+          {
+            "name": "interpretation",
+            "type": "string"
+          },
+          {
+            "name": "implementation_status",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "downstream_porting_review",
+      "path": "metadata/downstream_porting_review.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "repository",
+            "type": "string"
+          },
+          {
+            "name": "path_scope",
+            "type": "string"
+          },
+          {
+            "name": "disposition",
+            "type": "string"
+          },
+          {
+            "name": "evidence",
+            "type": "string"
+          },
+          {
+            "name": "next_check",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
       "name": "recode_ledger",
-      "path": "/private/tmp/dp-data-stage/metadata/recode_ledger.csv",
+      "path": "metadata/recode_ledger.csv",
       "profile": "tabular-data-resource",
       "format": "csv",
       "mediatype": "text/csv",
@@ -246,7 +786,7 @@
     },
     {
       "name": "downstream_contracts",
-      "path": "/private/tmp/dp-data-stage/metadata/downstream_contracts.csv",
+      "path": "metadata/downstream_contracts.csv",
       "profile": "tabular-data-resource",
       "format": "csv",
       "mediatype": "text/csv",

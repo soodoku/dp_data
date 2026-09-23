@@ -8,4 +8,9 @@
 *.dta binary
 *.pdf binary
 *.zip binary
-legacy/** -text
+data/*/knowledge-battery.csv -text
+*.sav binary
+*.parquet binary
+data/northern-ireland-2007/groups.csv -text
+data/*/codebook.txt -text
+*.doc binary

@@ -2,10 +2,23 @@ source("R/paths.R")
 
 resources <- c(
   "artifact_types",
+  "archive_collections",
+  "artifacts",
+  "canonical_tables",
+  "canonical_columns",
+  "knowledge_batteries",
+  "survey_sources",
+  "survey_components",
+  "component_field_exclusions",
+  "source_field_exclusions",
+  "knowledge_items",
+  "knowledge_join_contracts",
   "polls",
   "poll_aliases",
   "source_bundles",
   "source_files",
+  "source_findings",
+  "downstream_porting_review",
   "recode_ledger",
   "downstream_contracts"
 )
@@ -24,7 +37,7 @@ for (resource in resources) {
   package <- frictionless::add_resource(
     package,
     resource_name = resource,
-    data = project_path("metadata", paste0(resource, ".csv"))
+    data = file.path("metadata", paste0(resource, ".csv"))
   )
 }
 
