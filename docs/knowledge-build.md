@@ -210,3 +210,167 @@ Reference manuscripts: [Cor and Sood](https://gsood.com/research/papers/guess.pd
 [Luskin, Sood, Fishkin, and Hahn](https://gsood.com/research/papers/DeliberativeDistortions.pdf)
 (MD5 `d1e62fbd13340ee1d75791a115f2ab59`). The reliability checks reproduce the
 rounded values on page 17 of the Cor–Sood manuscript.
+
+
+## Historical aggregate reconstruction
+
+Release `v0.1.0` preserves the aggregate and historical linkage before source
+reconstruction. `make polardata` begins the next stage: reproducing existing
+values from reviewed poll-level responses. Corrections and a broader schema
+remain later stages, governed by the [issue register](poll-issues.md).
+New discrepancies or questionable definitions discovered while building must be
+recorded there with source/version, code location, affected records, numerical
+impact, plausible explanations and the evidence still needed. Matching the old
+aggregate does not clear a definition for substantive use. A failed parity check
+is an investigation trigger; do not update the benchmark to make it pass.
+
+The current increment writes
+`output/polardata/uk-health-1998.parquet`: 230 rows, one per UK Health
+respondent in the reviewed participant survey, with 73 columns. This is a
+partial reconstruction, not a complete UK Health record or full `polardata`.
+No downstream consumer reads it yet. Historical benchmarks, canonical knowledge
+tables and linkage outputs remain unchanged.
+
+`dpnum` is integer 2 and `caseid` is the survey's numeric `serial_m`, verified
+equal to `serial_a`, unique and nonmissing. The 22 attitude columns are doubles, use
+exact historical names `ukhealth.t{1,2}{suffix}` and take values in [0, 1] or
+missing. Source wave suffixes 1 and 2 are retained. Their definitions are:
+
+| Suffix | Raw source stems, separately in each wave | Historical formula |
+|---|---|---|
+| payhlt | payhlth | Three-category scaling; higher means individual payment |
+| poora | poora | Five-category scaling; higher means more priority to the poor |
+| option | options | Three-category scaling; higher means spending more |
+| hlthfu | chgp, chvis, chmeal, chstay, chamb | Available-item mean of five-category scores |
+| ctexpt | treata, cthart, ctnurs, ctbaby | Available-item mean of reversed five-category scores |
+| pritre | ctfert, cthosp, ctcosm | Available-item mean of reversed five-category scores |
+| severi | lista, severa | Scaled lista minus scaled severa, then empirical min–max scaling within each wave over all 230 source records with both answers |
+| preven | preva | Five-category scaling; higher means more priority to prevention |
+| dispub | ingova, inpuba | Available-item mean after mapping raw 1 and 3 to 1, raw 2 to 0.5 |
+| avgdis | ingpa, indoca | Same folded recode and available-item mean, for doctor input |
+| moresa | say | Five-category scaling; higher means more patient say |
+
+Ordinary k-category scaling is `(raw - 1) / (k - 1)`; reversal is `1 - score`.
+Raw -9 (not answered) and -8 (cannot choose), plus system missing values, become
+missing. Any other unreviewed code stops the build. Available-item means use
+only observed components; all-missing rows remain missing. The severity contrast
+requires both components. Original raw missing codes remain in the immutable
+survey and its dictionaries; this historical-format output does not distinguish
+them. Denominator expansion belongs to the later schema review.
+
+The builder reads original response fields from the public survey, not its stored
+indices. The codebook and V6 index memo were consulted; their differences from the
+historical aggregate remain recorded under UKH-01–04. In particular, the severity
+direction, wave-specific rescaling, and non-monotonic discretion map are reproduced
+without being endorsed or corrected. The supplied survey is already a merged
+participant file; reconstructing its earlier field-file merge remains unfinished.
+
+The comparison joins on unique `caseid` within dpnum 2 and requires the same 230
+IDs on both sides. No unmatched or duplicated IDs are allowed. All 71 reconstructed non-key
+columns must have identical missingness and values within absolute tolerance
+`1e-10` before an output is written. `audit/polardata_parity.csv` records counts,
+missingness differences, numerical differences and maximum absolute error for
+each field. The benchmark is read only for this check; it supplies no rebuilt
+values. A Parquet round trip must preserve values and types exactly.
+
+
+The 23 demographic and attitude-summary fields preserve these historical definitions:
+
+| Fields | Sources and definitions |
+|---|---|
+| female, minority | Numeric 0/1 from gender == 2 and ethnic != 1; the reviewed sample has only substantive codes 1:2 and 1:8 |
+| ppage | Numeric age in years; all 230 are observed adults |
+| educ4 | B11 educa codes 0/1/2/3/4 map to 0/.33/.66/1/.66; two -9 responses missing |
+| educ3, bettered | Numeric 0/.5/1 from educ4 (intermediate categories collapse to .5); logical educ4 >= .66; preserve missingness |
+| hhincome, highinc | Numeric (income - 1)/15 for bands 1:16, with -9/-8/-7 missing; logical final flag hhincome > .34 |
+| pollgroup, groupsize | Numeric 2200 + source group (1:15); number of surveyed people in that group, including those with missing demographic answers |
+| pfemale, pminority | Available-case group means of female and minority |
+| varfemale, sdfemale | pfemale*(1-pfemale) and its square root; Bernoulli population variance convention |
+| vareduc, sdeduc | Within-group sample variance of observed educ4, denominator n-1, and its square root |
+| meaned, meanage | Available-case group means of educ4 and ppage |
+| phighinc | Available-case group mean of the earlier flag hhincome > .8; deliberately preserves the historical difference from final highinc pending UKH-08 |
+| pfemale_ind | (pfemale*groupsize-female)/(groupsize-1); all group sizes exceed one and gender is complete |
+| attextreme | Available-item mean of abs(index-.5) over the 11 T1 indices before severity rescaling |
+| meanxtreme | Available-case group mean of that historical attextreme |
+| avgsd | Mean of the 11 within-group sample SDs using those same early index versions |
+
+All group summaries are doubles repeated for members of the same discussion
+group. There are 15 groups with 13–17 respondents each. The codebook's A1/A2,
+B11/B17/B18 and Q18/Q23 items, the V6 index memo, the poll script, and merge
+scripts 03/05/06 establish the definitions and assignment order. Issues UKH-07–10
+record the retained index inventory, differing income thresholds, attitude-summary
+versions and the knowledge-precision question. This output replaces the
+initial attitudes-only partial file; no old values are dropped or revised.
+Entropy, generalized variance and remaining poll descriptors are still outside
+this partial reconstruction.
+
+
+The next 26 fields reproduce historical knowledge and peer quantities from the
+six raw Q9A–F responses. Keys are false/true/true/false/false/false (numeric
+0/1/1/0/0/0) in both waves. Raw -9/-8/-1 and system missing score zero, preserving
+the original six-item denominator. Other codes stop the build. These keys match
+all stored correctness fields after the historical missing-to-zero conversion;
+the Q9E printed-codebook conflict remains unresolved under UKH-12.
+
+| Fields | Historical definition |
+|---|---|
+| t1know, t2know | Proportion correct among all six items in the respective wave |
+| t1knowcor | Mean of itemwise T1-correct × T2-correct; uses departure answers to revise baseline correctness |
+| grpgain | Across items not correct under that joint-wave rule, mean of other group members' joint-wave correctness; missing when no such items remain |
+| meant1know, meant2know, meant1knowcor | Group means of the corresponding respondent scores, including zero-filled answers |
+| meant1know_ind, meant1knowcor_ind | (group mean × group size - own score)/(group size - 1) |
+| t1knowlevel | Poll mean after rounding individual T1 scores to two decimals and converting to 32-bit floating point, reproducing stored hknow1 exactly (UKH-10) |
+| t1knowlevelcor, t2knowlevel | Poll means of unrounded t1knowcor and t2know |
+| knowgain, knowgain2 | t2know minus t1know, or minus t1knowcor |
+| logpk, loggain | Natural log of t1knowcor or grpgain, replacing only nonpositive values with .0001; preserve missing values |
+| tobitpk | Numeric indicator t1knowcor > .6 |
+| t1knowr, t2knowr, t1knowrcor, grpgainr | Historical UK Health aliases of t1know, t2know, t1knowcor and grpgain |
+| meant1knowr, meant1knowrcor, t1knowlevelrcor | Aliases of the corresponding means without r |
+| knowgainr, knowgainr2 | Aliases of knowgain and knowgain2 |
+
+All 26 columns are doubles. The peer calculation follows `groupgain()` in the
+archived `hlmFunc.R`, then its normalization in `03_data.R`. For a respondent
+with an incorrect joint-wave answer, their contribution to that item's group
+correctness sum is zero; dividing that sum by group size minus one therefore
+excludes self. Averaging across only that person's incorrect joint-wave items
+reproduces the merged `grpgain`. Twelve people have no such items and retain a
+missing gain; fourteen have observed zero gains. No gain is imputed for a missing
+denominator. UKH-11 records the interpretation and post-wave dependence.
+
+Neither the aggregate nor stored survey scores/correctness fields supply these
+rebuilt values. Tests remove the stored fields and require unchanged results,
+check correctness against the archived fields separately, and verify all 230
+reconstructed rounded scores against stored `hknow1`. The 32-bit conversion
+reproduces the observed numeric representation; the original command that created
+that representation remains unverified. Numeric parity does not adjudicate the
+answer-key conflict or justify treating an adjusted score as a baseline-only
+measure. Those investigations remain separate from reproduction.
+
+
+## Broader respondent layer
+
+The original knowledge outputs keep their existing samples and scoring rules.
+`make respondents` creates separate tables in `output/respondent/` for all
+reviewed source records within the 21-poll historical scope. Its UK Health,
+UK–EU, UK Monarchy, 1997 UK election, UK Crime, CPL, WTU and SWEPCO definitions reproduce historical
+respondent measures; other polls retain
+raw registered knowledge fields while respondent reconstruction remains pending.
+See the [stage contracts](architecture.md#respondent-reconstruction-before-aggregation),
+[coverage](../audit/respondent_coverage.csv), and
+[historical comparison](../audit/respondent_parity.csv).
+
+UK–EU's source has 900 rows. Its historical `part == 1` view contains 238 people,
+including the 14 excluded from the 224-person knowledge battery. `caseid`
+identifies all 238 historical records exactly. Known group assignments cover
+234 of those attendees; marker 99 remains unresolved for four. All source rows
+remain in the broader table, including the 662 nonattendees; exclusion from an
+attendance sample does not establish randomized control assignment.
+
+Historical UK–EU formulas use raw factual responses with keys 1/2/2/1/2 for
+`eusize`, `swiss`, `inctax`, `elect`, and `ptyapp`. Noncorrect and missing answers
+score zero with a five-item denominator. The corrected baseline is the mean
+of itemwise T1–T2 correctness products. Age, education, sex, ethnicity, political
+interest, eight attitude measures, and their individual transformations follow
+`uk_eu.R` and the later merge scripts. Explicitly absent fields stay missing.
+The surprising attitude normalizations and ethnicity exclusion are preserved
+and detailed in [UKEU-02–05](poll-issues.md#uk–eu-1995--uk-eu-1995).

@@ -8,12 +8,12 @@ The repository establishes provenance before changing any analysis:
 
 - public replication deposits are stored byte-for-byte with checksums;
 - all 23 Cor–Sood poll-level scored knowledge batteries are extracted and cataloged;
-- the five historical CDD archive bundles are inventoried but remain in a
-  local vault while files are reviewed poll by poll;
+- historical CDD archive members retain their original paths and checksums;
+  unique unreviewed files remain in the local vault;
 - poll names and legacy numeric identifiers map to stable `poll_id` values;
 - data, questionnaires, codebooks, briefing materials, research designs,
   event reports, papers, and scripts share one artifact contract;
-- every recode must have a ledger entry; and
+- scoring definitions and unresolved recoding questions are recorded; and
 - downstream repositories consume a tagged export and verify its checksum.
 
 Direct identifiers were found in at least one historical raw file. The archive
@@ -40,6 +40,23 @@ Known measurement, sample, linkage, and provenance questions are collected in th
 choices from unresolved concerns and existing upstream differences; this review
 preserves current scores pending instrument-level verification.
 
+The first historical aggregate reconstruction is available with `make polardata`: it
+rebuilds 71 UK Health attitude, demographic, knowledge and group-summary fields
+for 230 respondents from survey answers, with person-level parity checks. See the [reconstruction contract](docs/knowledge-build.md#historical-aggregate-reconstruction).
+This partial output preserves historical recodes and does not replace downstream
+inputs.
+
+The respondent stage is available with `make respondents`. It retains all
+reviewed source records for the historical poll scope, separates named samples
+from people, and builds versioned individual measures for UK Health, UK–EU,
+UK Monarchy, the 1997 UK election, UK Crime, CPL, WTU and SWEPCO. These eight
+polls cover 308 historical respondent-field targets; 13 polls still need source
+reconciliation or respondent recodes.
+`make compare-respondents` checks these measures against historical values;
+[group and poll summaries follow later](docs/architecture.md#respondent-reconstruction-before-aggregation).
+The [coverage report](audit/respondent_coverage.csv) lists unfinished poll recodes
+and source gaps. Existing downstream products remain unchanged.
+
 ## Reproduce
 
 ```sh
@@ -49,13 +66,17 @@ make check
 
 `make check` validates the Frictionless Data Package, source checksums,
 metadata contracts, the survey-based build, historical linkage, item-level
-comparisons, tests, and linting. `make inventory` is a local-only task
-that rebuilds the CDD vault inventory from the untracked archive.
-
-The five original CDD ZIP exports stay untracked at the repository root.
-`make vault` verifies their byte counts and SHA-256 checksums before unpacking
-them into the ignored `vault/cdd/` directory. It will stop rather than unpack
-an altered or missing bundle.
+comparisons, respondent and partial aggregate reconstruction, tests, and linting.
+The original CDD inventory in `audit/cdd_archive_files.csv` preserves every
+archive member's original path and hash. Its `retained_path` points to the
+surviving copy after deduplication, either under `data/` or in the local vault.
+Migration-only import and survey-review commands verify that copy's checksum.
+The unpacking and inventory-rebuilding commands have been retired; normal builds
+read the registered poll inputs under `data/` and need no archive extraction.
+Original bundle checksums remain in `metadata/source_bundles.csv` as provenance.
+The disclosure scan, survey import, archive comparison, and downstream source
+audit are also migration tools; they can be retired as their source-review work
+is completed.
 
 ## Repository roles
 
@@ -76,11 +97,19 @@ The architecture and migration order are documented in
 `metadata/artifacts.csv` is the authoritative artifact catalog. Poll-level
 `manifest.csv` files are generated from it, so descriptive metadata is not
 maintained twice. A blank `poll_id` denotes a collection-wide artifact rather
-than an unknown poll.
+than an unknown poll. Source materials live in the relevant poll's
+`questionnaires/`, `codebooks/`, `briefing-materials/`, `papers/`, `reports/`, or
+`design/` directory. Cross-poll references and historical definition versions
+have one copy under `data/shared/`; poll manifests point to that same file.
+Original archive paths, download URLs, checksums, and comparison limitations are
+recorded in the central catalog. Identical copies are consolidated; different
+versions remain separate.
 
 `LICENSE` covers this repository's code. Data retain the license recorded for
-each input in `metadata/source_files.csv`; material without file-level rights
-clearance remains in the local vault. Exact historical CDD scripts are retained
+each input in `metadata/source_files.csv`. Reference materials retain their
+source copyrights; `NOASSERTION` means no redistribution license has been
+established, not that the material is covered by the repository license.
+Restricted respondent files remain in the local vault. Exact historical CDD scripts are retained
 in Git history under the `historical-cdd-scripts` tag, not beside the maintained
 pipeline on `main`.
 
