@@ -7,29 +7,68 @@ historical_group_summary <- function(value, group, statistic = mean) {
   result
 }
 
-historical_entropy <- function(value, categories) {
-  stopifnot(categories %in% c(2L, 4L))
+apply_peer_opportunity_ceiling <- function(gain, scored_items, group) {
+  scored_items <- as.matrix(scored_items)
+  stopifnot(
+    is.numeric(scored_items), ncol(scored_items) > 0L,
+    nrow(scored_items) == length(gain), length(group) == length(gain)
+  )
+  known <- !is.na(scored_items) & abs(scored_items - 1) <= 1e-10
+  complete_ceiling <- rowSums(known) == ncol(scored_items)
+  size <- historical_group_summary(rep(1, length(group)), group, sum)
+  has_peers <- !is.na(group) & !is.na(size) & size > 1
+  gain[!has_peers] <- NA_real_
+  gain[complete_ceiling & has_peers] <- 0
+  gain
+}
+
+observed_peer_mean <- function(value, group) {
+  stopifnot(
+    is.numeric(value), length(value) == length(group),
+    all(is.finite(value) | is.na(value))
+  )
+  observed <- !is.na(value)
+  total <- historical_group_summary(value, group, sum)
+  count <- historical_group_summary(as.numeric(observed), group, sum)
+  peers <- count - as.numeric(observed)
+  focal <- ifelse(observed, value, 0)
+  result <- (total - focal) / peers
+  result[is.na(peers) | peers == 0] <- NA_real_
+  result
+}
+
+categorical_entropy <- function(value) {
+  stopifnot(is.numeric(value), all(is.finite(value) | is.na(value)))
   frequencies <- table(round(value, 2))
   if (!length(frequencies)) {
     return(NA_real_)
   }
-  probabilities <- as.numeric(frequencies) / length(value)
-  # The historical helper divides by all group rows, including missing answers.
-  probabilities <- if (categories == 2L) {
-    c(probabilities[1], 1 - probabilities[1])
+  probabilities <- as.numeric(frequencies) / sum(frequencies)
+  -sum(probabilities * log2(probabilities))
+}
+
+covariance_spectrum <- function(covariance) {
+  stopifnot(is.matrix(covariance), nrow(covariance) == ncol(covariance))
+  values <- if (all(is.finite(covariance))) {
+    eigen(covariance, symmetric = TRUE, only.values = TRUE)$values
   } else {
-    # Fewer than four observed categories historically produced a missing score.
-    probabilities[seq_len(4L)]
+    rep(NA_real_, ncol(covariance))
   }
-  terms <- ifelse(probabilities == 0, 0, probabilities * log2(probabilities))
-  -sum(terms)
+  tolerance <- if (all(is.finite(values))) {
+    64 * .Machine$double.eps * ncol(covariance) * max(abs(values))
+  } else {
+    NA_real_
+  }
+  list(values = values, tolerance = tolerance)
 }
 
 historical_genvar <- function(attitudes) {
   attitudes <- as.matrix(attitudes)
   stopifnot(is.numeric(attitudes), ncol(attitudes) > 0L)
   covariance <- stats::cov(attitudes, use = "pairwise.complete.obs")
-  if (anyNA(covariance)) {
+  spectrum <- covariance_spectrum(covariance)
+  if (anyNA(spectrum$values) ||
+        any(spectrum$values < -spectrum$tolerance)) {
     return(NA_real_)
   }
   determinant <- det(covariance)
@@ -52,10 +91,10 @@ historical_group_dispersion <- function(attitudes, group) {
   result
 }
 
-historical_composition <- function(values, group, early_high_income) {
+historical_composition <- function(values, group) {
   stopifnot(
     length(group) == nrow(values),
-    length(early_high_income) == nrow(values)
+    length(values$high_income) == nrow(values)
   )
   average <- function(value) historical_group_summary(value, group)
   size <- historical_group_summary(rep(1, length(group)), group, sum)
@@ -64,22 +103,24 @@ historical_composition <- function(values, group, early_high_income) {
     values$education_four, group,
     stats::var
   )
-  entropy <- purrr::map2(
-    list(values$female, values$minority, values$education_four), c(2L, 2L, 4L),
-    function(value, categories) {
+  entropy <- purrr::map(
+    list(values$female, values$minority, values$education_four),
+    function(value) {
       historical_group_summary(value, group, function(x, ...) {
-        historical_entropy(x, categories)
+        categorical_entropy(x)
       })
     }
   ) |> do.call(what = cbind)
+  combined_entropy <- rowSums(entropy, na.rm = TRUE)
+  combined_entropy[rowSums(!is.na(entropy)) == 0L] <- NA_real_
   tibble::tibble(
     groupsize = size, pfemale = female, pminority = average(values$minority),
     varfemale = female * (1 - female), sdfemale = sqrt(female * (1 - female)),
     vareduc = education_variance, sdeduc = sqrt(education_variance),
     meaned = average(values$education_four), meanage = average(values$age),
-    phighinc = average(early_high_income),
+    phighinc = average(values$high_income),
     meanxtreme = average(values$attitude_extremity),
-    pfemale_ind = (female * size - values$female) / (size - 1),
-    entropy = rowSums(entropy, na.rm = TRUE)
+    pfemale_ind = observed_peer_mean(values$female, group),
+    entropy = combined_entropy
   )
 }

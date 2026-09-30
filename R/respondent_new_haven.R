@@ -1,31 +1,30 @@
+source(project_path("R", "source_new_haven.R"))
+
 new_haven_knowledge_items <- function(survey, wave) {
   keys <- c(
     `35` = 3, `36` = 2, `37` = 2, `39` = 3,
     `40` = 1, `41` = 1, `42` = 4, `43` = 1
   )
-  purrr::imap(keys, function(key, item) {
+  items <- purrr::imap(keys, function(key, item) {
     value <- read_source_codes(survey, paste0(wave, "_q", item), 0:6)
     as.numeric(value %in% key)
   }) |>
     tibble::as_tibble() |>
     as.matrix()
+  if (wave == "post") {
+    absent <- new_haven_departure_observed(survey) %in% FALSE
+    items[absent, ] <- NA_real_
+  }
+  items
 }
 
 new_haven_attitudes <- function(survey, wave) {
   item <- function(question) {
     value <- read_source_codes(survey, paste0(wave, "_q", question), 0:6)
-    value[is.na(value) | value == 6] <- 3
-    scaled <- (5 - value) / 4
-    if (wave == "mid") scaled[value == 0] <- 0
-    scaled
+    value[value %in% c(0, 6)] <- NA_real_
+    (5 - value) / 4
   }
   airport <- (item(12) - item(13)) / 2 + .5
-  # The preserved source coding maps .625 to .675 at both waves.
-  airport[airport == .625] <- .675
-  if (wave == "mid") {
-    unknown <- is.na(survey$mid_q12) | survey$mid_q12 == 6
-    airport[unknown] <- .5
-  }
   voluntary <- (item(21) + item(22)) / 2
   tibble::tibble(
     airport_expansion = as_historical_float(airport),
@@ -52,18 +51,23 @@ build_new_haven_individual <- function(
   income <- match(income, c(1, 3:12))
   birth_year <- read_source_codes(survey, "pre_q62", 1800:2002)
   birth_year[birth_year == 1890 & !is.na(birth_year)] <- NA_real_
+  race <- read_source_codes(survey, "pre_q70", 1:5)
   dplyr::bind_cols(
     dplyr::rename_with(baseline, \(name) paste0(name, "_t1")),
     dplyr::rename_with(post, \(name) paste0(name, "_t2")), knowledge,
     tibble::tibble(
       age = 2002 - birth_year,
       female = recode_source_values(survey, "pre_q72", c(0, 1)),
-      minority = as.numeric(read_source_codes(survey, "pre_q70", 1:5) != 3),
+      minority = dplyr::case_when(
+        race == 3 ~ 0,
+        race %in% c(1, 2, 4) ~ 1,
+        .default = NA_real_
+      ),
       education_four = education,
       education_three = collapse_historical_education(education),
-      higher_education = as.numeric(education == 1),
+
       household_income = as.numeric(income),
-      high_income = as.numeric(income > 5),
+
       political_interest_t1 = NA_real_, read_briefing = NA_real_,
       attitude_extremity = as_historical_float(rowMeans(
         as.data.frame(lapply(baseline, \(x) as_historical_float(abs(x - .5))))

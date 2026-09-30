@@ -22,13 +22,96 @@ test_that("Bulgaria Version E is reconstructed at original float precision", {
   }
 })
 
-test_that("Bulgaria reproduces all historical respondent targets", {
+test_that("Bulgaria unknown ethnicity stays missing without removing people", {
+  survey <- read_poll_survey("bulgaria-crime-2002")
+  original <- survey$ethnos
+  values <- build_bulgaria_individual(survey)
+  unknown <- survey$ethnos == 0
+  expect_equal(survey$source_row[unknown], c(277L, 278L))
+  expect_equal(as.numeric(survey$id[unknown]), c(1614, 1018))
+  expect_equal(sum(is.na(values$minority)), 2L)
+  expect_true(all(is.na(values$minority[unknown])))
+  for (code in 1:4) {
+    selected <- survey$ethnos == code
+    expect_equal(values$minority[selected],
+                 rep(as.numeric(code != 1), sum(selected)))
+  }
+  expect_identical(survey$ethnos, original)
+  contract <- read_metadata("respondent_sources") |>
+    dplyr::filter(.data$poll_id == "bulgaria-crime-2002")
+  built <- build_poll_respondents(contract)
+  expect_equal(nrow(built$people), 278L)
+  historical <- built$sample_memberships |>
+    dplyr::filter(.data$sample_id == "historical-polardata")
+  expect_equal(sum(historical$included), 278L)
+  memberships <- built$respondent_memberships
+  expect_equal(nrow(memberships), 278L)
+  expect_true(all(
+    built$people$respondent_id[unknown] %in% memberships$respondent_id
+  ))
+  raw <- built$source_responses |>
+    dplyr::filter(.data$source_column == "ethnos")
+  expect_equal(raw$raw_numeric[
+    match(built$people$respondent_id[unknown], raw$respondent_id)
+  ], c(0, 0))
+  survey$ethnos[1] <- 5
+  expect_error(build_bulgaria_individual(survey), "Unreviewed source codes")
+})
+
+test_that("Bulgaria death-penalty agreement spans both scale endpoints", {
+  survey <- read_poll_survey("bulgaria-crime-2002")
+  expected <- c(1, 2 / 3, 1 / 3, 0)
+  for (wave in 1:2) {
+    source <- if (wave == 1L) "q19" else "q19p"
+    codes <- as.numeric(survey[[source]])
+    scores <- bulgaria_attitudes(survey, wave)$death_penalty
+    for (code in 1:4) {
+      expect_true(any(codes == code, na.rm = TRUE))
+      expect_equal(unique(scores[which(codes == code)]), expected[code])
+    }
+    expect_true(all(is.na(scores[is.na(codes) | codes == 99])))
+  }
+})
+
+test_that("Bulgaria individual and group high-income rules agree", {
+  survey <- read_poll_survey("bulgaria-crime-2002")
+  individual <- normalize_demographic_flags(
+    build_bulgaria_individual(survey), rep(TRUE, nrow(survey)),
+    as.character(survey$source_row)
+  )
+  income <- as.numeric(survey$incomes)
+  income[income == 0] <- NA_real_
+  expect_equal(individual$high_income,
+               as.numeric(income > stats::median(income, na.rm = TRUE)))
+  expect_equal(sum(is.na(individual$high_income)), 5L)
+  wide <- arrow::read_parquet(project_path(
+    "output", "polardata", "polardata.parquet"
+  )) |>
+    dplyr::filter(.data$pollid == 53)
+  shares <- wide |>
+    dplyr::group_by(.data$pollgroup) |>
+    dplyr::summarise(computed = mean(.data$highinc, na.rm = TRUE),
+                     stored = dplyr::first(.data$phighinc), .groups = "drop")
+  expect_equal(shares$computed, shares$stored, tolerance = 1e-8)
+})
+
+test_that("Bulgaria matches reviewed corrections and median normalization", {
   audit <- readr::read_csv(project_path("audit", "respondent_parity.csv"),
     show_col_types = FALSE
   )
   rows <- audit[audit$poll_id == "bulgaria-crime-2002", ]
   expect_equal(nrow(rows), 51L)
   expect_true(all(rows$respondents == 278L))
-  expect_true(all(rows$value_differences == 0L))
-  expect_true(all(rows$missingness_differences == 0L))
+  changed <- rows[rows$value_differences > 0L, ]
+  expect_setequal(changed$legacy_field, c(
+    "bulgaria.bulgaria.t1q19", "bulgaria.bulgaria.t2q19", "attextreme",
+    "highinc"
+  ))
+  expect_equal(changed$value_differences[
+    match(c("bulgaria.bulgaria.t1q19", "bulgaria.bulgaria.t2q19",
+            "attextreme", "highinc"), changed$legacy_field)
+  ], c(131L, 170L, 131L, 109L))
+  expect_true(all(rows$unexplained_differences == 0L))
+  expect_equal(rows$missingness_differences,
+               as.integer(rows$legacy_field == "minority") * 2L)
 })

@@ -5,7 +5,7 @@ core_poll_constants <- function(poll_id) {
     "uk-monarchy-1996" = c(23, 2, 0, 9, 4),
     "uk-general-election-1997" = c(25, 2, 0, 15, 4),
     "uk-crime-1994" = c(27, 2, 0, 7, 5),
-    "nic-1996" = c(1001, 1, 1, 11, 9),
+    "nic-1996" = c(1001, 1, 0, 11, 9),
     "cpl-1996" = c(29, 1, 0, 7, 7),
     "wtu-1996" = c(986, 1, 0, 5, 7),
     "swepco-1996" = c(3000, 1, 0, 5, 7),
@@ -41,6 +41,11 @@ core_poll_profile <- function(survey, poll_id) {
   )
   group <- rounded_source_code(survey[[group_field]])
   group[group <= 0 & !is.na(group)] <- NA_real_
+  if (poll_id == "uk-eu-1995") group[group %in% 99] <- NA_real_
+  if (poll_id == "uk-general-election-1997") {
+    participant <- read_source_codes(survey, "partic", 0:1)
+    group[participant != 1] <- NA_real_
+  }
   prefix <- if (poll_id == "nic-1996") 95445 else constants[["pollid"]]
   present <- !is.na(group)
   group[present] <- as.numeric(paste0(
@@ -75,31 +80,22 @@ core_poll_profile <- function(survey, poll_id) {
     "uk-eu-1995" = individual[grep("^ukeu[.].*1[gr]$", names(individual))],
     "uk-crime-1994" = crime_attitudes(survey, 1L),
     "cpl-1996" = cpl_attitudes(survey, 1L),
-    "wtu-1996" = utility_attitudes(survey, poll_id, 1L),
-    "swepco-1996" = utility_attitudes(survey, poll_id, 1L),
+    "wtu-1996" = utility_attitudes(survey, poll_id, 1L) |>
+      dplyr::select(dplyr::ends_with("_midpoint_imputed")),
+    "swepco-1996" = utility_attitudes(survey, poll_id, 1L) |>
+      dplyr::select(dplyr::ends_with("_midpoint_imputed")),
     individual[
       grepl("_t1$", names(individual)) &
         !names(individual) %in% c("knowledge_t1", "political_interest_t1")
     ]
   )
-  if (poll_id == "uk-health-1998") {
-    baseline$ukhealth.t1severi <- individual$severity_t1_unscaled
-  }
   if (poll_id %in% c("cpl-1996", "wtu-1996", "swepco-1996")) {
     competition <- read_utility_value(survey, poll_id, "compet1", 1:5)
     if (poll_id != "cpl-1996") {
-      baseline$research_t1 <- baseline$research_t1 * 10
       competition <- dplyr::coalesce(competition, 5)
     }
     baseline$competition <- (competition - 1) / 4
   }
-  early_income <- switch(poll_id,
-    "uk-health-1998" = individual$highinc_early,
-    "uk-general-election-1997" = as.numeric(individual$household_income > 3),
-    "cpl-1996" = individual$high_income,
-    "bulgaria-crime-2002" = as.numeric(individual$household_income > 4),
-    rep(NA_real_, nrow(survey))
-  )
   score <- if ("knowledge_t1" %in% names(individual)) {
     individual$knowledge_t1
   } else {
@@ -108,18 +104,22 @@ core_poll_profile <- function(survey, poll_id) {
   if (poll_id == "uk-health-1998") score <- individual$t1know_rounded
   list(
     group = group, before = before, after = after, attitudes = baseline,
-    early_income = early_income, poll_score = score
+    poll_score = score
   )
 }
 
 historical_fractional_gain <- function(corrected, group) {
-  stopifnot(nrow(corrected) == length(group), !anyNA(corrected))
+  stopifnot(
+    nrow(corrected) == length(group),
+    !anyNA(corrected[!is.na(group), , drop = FALSE])
+  )
   size <- historical_group_summary(rep(1, length(group)), group, sum)
   peer <- apply(corrected, 2, function(value) {
     historical_group_summary(value, group) * size / (size - 1)
   })
   numerator <- rowSums((corrected == 0) * peer)
-  numerator / (ncol(corrected) * (1 - rowMeans(corrected)))
+  gain <- numerator / (ncol(corrected) * (1 - rowMeans(corrected)))
+  apply_peer_opportunity_ceiling(gain, corrected, group)
 }
 
 build_core_derived <- function(survey, values, poll_id) {
@@ -130,10 +130,9 @@ build_core_derived <- function(survey, values, poll_id) {
   arrival <- NULL
   if (poll_id == "nic-1996") {
     arrival <- nic_attitudes(survey, 2L)[rows, ]
-    arrival[, 7:9] <- profile$attitudes[rows, 7:9]
   }
   result <- historical_derived_columns(
-    values, group, profile$early_income[rows],
+    values, group,
     profile$attitudes[rows, ], arrival
   )
   result$t1knowlevel <- mean(profile$poll_score)
@@ -149,18 +148,6 @@ build_core_derived <- function(survey, values, poll_id) {
   )
   result$avgsd <- full_dispersion$average_sd[rows]
   result$genvar <- full_dispersion$generalized_variance[rows]
-  if (poll_id == "cpl-1996") {
-    # cpl2.sav had 196 columns; six new fields preceded rep(1, length(cpl)).
-    columns <- 202L
-    early_size <- historical_group_summary(
-      ifelse(survey$source_row <= columns, 1, NA_real_), profile$group, sum
-    )
-    full_size <- historical_group_summary(
-      rep(1, nrow(survey)), profile$group, sum
-    )
-    result$grpgain <- result$grpgain *
-      ((early_size / (early_size - 1)) / (full_size / (full_size - 1)))[rows]
-  }
   result$grpgain2 <- NA_real_
   if (poll_id == "nic-1996") {
     arrival_joint <- nic_knowledge_items(survey, 2L)[rows, ] *
@@ -171,7 +158,6 @@ build_core_derived <- function(survey, values, poll_id) {
   }
   result$grpgainr <- result$grpgain
   if (poll_id == "uk-crime-1994") result$grpgainr <- NA_real_
-  result$loggain <- historical_log_score(result$grpgain)
   result$pollgroup <- group
   constants <- core_poll_constants(poll_id)
   for (field in names(constants)) result[[field]] <- constants[[field]]

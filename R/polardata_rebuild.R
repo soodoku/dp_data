@@ -55,6 +55,7 @@ build_historical_poll <- function(poll_id) {
   } else {
     builder(survey, values)
   }
+  derived$loggain <- historical_log_score(derived$grpgain)
   stopifnot(
     nrow(derived) == nrow(values),
     !length(intersect(names(derived), names(values)))
@@ -68,10 +69,6 @@ historical_wide_export <- function(polls) {
   fields <- read_metadata("polardata_fields")$legacy_field
   data <- purrr::list_rbind(polls)
   stopifnot(!anyDuplicated(data[c("dpnum", "caseid")]))
-  rows <- unlist(lapply(seq_len(nrow(data)), function(row) {
-    rep(row, if (data$dpnum[[row]] == 16) 2L else 1L)
-  }))
-  data <- data[rows, ]
   data$X <- seq_len(nrow(data))
   for (field in setdiff(fields, names(data))) data[[field]] <- NA_real_
   data[, fields]
@@ -82,6 +79,8 @@ historical_derived_measures <- function(polls) {
   fields <- layers$legacy_field[
     layers$layer %in% c("group-derived", "poll-derived")
   ]
+  measure_names <- read_metadata("derived_measure_names")
+  stopifnot(setequal(fields, measure_names$legacy_field))
   purrr::imap(polls, function(data, poll_id) {
     data |>
       dplyr::select("respondent_id", dplyr::all_of(fields)) |>
@@ -89,7 +88,95 @@ historical_derived_measures <- function(polls) {
         names_to = "legacy_field", values_to = "value_numeric"
       ) |>
       dplyr::mutate(
-        poll_id = .env$poll_id, definition_version = "historical-v1",
+        poll_id = .env$poll_id,
+        definition_version = dplyr::case_when(
+          .data$legacy_field == "genvar" ~ "covariance-validity-v2",
+          .data$legacy_field %in% c(
+            "grpgain", "grpgain2", "grpgainr", "loggain"
+          ) ~ "peer-opportunity-v2",
+          .env$poll_id == "uk-health-1998" &
+            .data$legacy_field %in% c("meanxtreme", "avgsd", "genvar") ~
+            "ukh-03-07-v2",
+          .env$poll_id == "uk-eu-1995" &
+            .data$legacy_field %in% c("meanxtreme", "avgsd", "genvar") ~
+            "ukeu-02-v2",
+          .data$legacy_field == "phighinc" ~ "poll-median-v1",
+          .data$legacy_field == "pfemale_ind" ~ "observed-peers-v2",
+          .data$legacy_field == "entropy" ~ "entropy-observed-v2",
+          .env$poll_id == "tomorrows-europe-2007" &
+            .data$legacy_field %in% c(
+              "vareduc", "sdeduc", "meaned", "meanage"
+            ) ~ "te-05-v2",
+          .env$poll_id == "europolis-2009" &
+            .data$legacy_field == "meanage" ~ "euro-06-v2",
+          .env$poll_id == "swepco-1996" &
+            .data$legacy_field %in% c("meanxtreme", "avgsd", "genvar") ~
+            "swe-04-v2",
+          .env$poll_id == "wtu-1996" &
+            .data$legacy_field %in% c("meanxtreme", "avgsd", "genvar") ~
+            "wtu-05-v2",
+          .env$poll_id == "uk-general-election-1997" &
+            .data$legacy_field %in% c(
+              "grpgain", "grpgainr", "loggain", "avgsd", "genvar"
+            ) ~ "ukge-05-v2",
+          .env$poll_id == "uk-general-election-1997" &
+            .data$legacy_field %in% c(
+              "meant1knowcor", "t1knowlevelcor", "meant1knowcor_ind",
+              "meant2know", "t2knowlevel", "meant1knowrcor",
+              "t1knowlevelrcor"
+            ) ~ "ukge-03-v2",
+          .env$poll_id == "uk-monarchy-1996" &
+            .data$legacy_field %in% c(
+              "grpgain", "grpgainr", "loggain", "meant1knowcor",
+              "meant1knowrcor", "meant1knowcor_ind", "t1knowlevelcor",
+              "t1knowlevelrcor", "meant2know", "t2knowlevel"
+            ) ~ "ukm-01-v2",
+          .env$poll_id == "nic-1996" & .data$legacy_field == "meanage" ~
+            "nic-08-v3",
+          .env$poll_id == "nic-1996" & .data$legacy_field %in%
+            c("meanxtreme", "avgsd", "avgsd2", "genvar") ~ "nic-12-v2",
+          .env$poll_id == "cpl-1996" & .data$legacy_field %in%
+            c("grpgain", "grpgainr", "loggain") ~ "cpl-05-v2",
+          .env$poll_id == "australia-republic-1999" &
+            .data$legacy_field %in% c("grpgain", "loggain") ~ "aus-02-v3",
+          .env$poll_id == "australia-republic-1999" &
+            .data$legacy_field == "meanage" ~ "aus05-v2",
+          .env$poll_id == "btp-health-education-2005" &
+            .data$legacy_field %in% c(
+              "pfemale", "varfemale", "sdfemale", "pfemale_ind"
+            ) ~ "btphe-01-v2",
+          .env$poll_id == "btp-health-education-2005" &
+            .data$legacy_field %in% c(
+              "meant1know", "meant1knowr", "meant1know_ind",
+              "meant1knowcor", "meant1knowrcor", "meant1knowcor_ind",
+              "meant2know", "t1knowlevelcor", "t1knowlevelrcor",
+              "t2knowlevel", "t1knowlevel", "grpgain", "grpgainr", "loggain"
+            ) ~ "btphe-04-v2",
+          .env$poll_id == "new-haven-2004" &
+            .data$legacy_field == "pminority" ~ "nh-04-v2",
+          .env$poll_id == "bulgaria-crime-2002" &
+            .data$legacy_field == "pminority" ~ "bgc06-v2",
+          .env$poll_id == "zeguo-2005" &
+            .data$legacy_field %in% c(
+              "meanxtreme", "avgsd", "genvar"
+            ) ~ "zg-02-v2",
+          .env$poll_id == "zeguo-2005" &
+            .data$legacy_field == "meanage" ~ "zg-04-v2",
+          .env$poll_id == "san-mateo-2008" &
+            .data$legacy_field == "t1knowlevel" ~ "sm-03-v2",
+          .env$poll_id == "btp-national-2003" &
+            .data$legacy_field %in% c("meanxtreme", "avgsd", "genvar") ~
+            "btpn-02-v2",
+          .env$poll_id == "btp-presidential-primaries-2004" &
+            .data$legacy_field %in% c("grpgain", "grpgainr", "loggain") ~
+            "pr-02-v2",
+          .env$poll_id == "btp-presidential-primaries-2004" &
+            .data$legacy_field %in% c(
+              "groupsize", "vareduc", "sdeduc", "pfemale_ind",
+              "meant1know_ind", "meant1knowcor_ind"
+            ) ~ "pr-03-v2",
+          .default = "historical-v1"
+        ),
         value_status = dplyr::case_when(
           is.na(.data$value_numeric) ~ "missing",
           .data$value_numeric == Inf ~ "positive-infinity",
@@ -98,5 +185,7 @@ historical_derived_measures <- function(polls) {
         ), .before = 1
       )
   }) |>
-    purrr::list_rbind()
+    purrr::list_rbind() |>
+    dplyr::left_join(measure_names, by = "legacy_field",
+                     relationship = "many-to-one")
 }

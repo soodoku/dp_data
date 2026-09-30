@@ -1,3 +1,5 @@
+source(project_path("R", "source_monarchy.R"))
+
 monarchy_attitudes <- function(survey, wave) {
   prefix <- if (wave == 1L) "Q" else "R"
   response <- function(stem, values, missing) {
@@ -41,20 +43,23 @@ monarchy_attitudes <- function(survey, wave) {
 monarchy_knowledge_items <- function(survey, wave) {
   key <- c(A = 2, B = 2, C = 1, D = 2, E = 1, F = 1, G = 2, H = 1)
   items <- purrr::imap(key, function(correct, item) {
-    # UKM-01: the historical post score reuses the baseline Commonwealth item.
-    prefix <- if (wave == 1L || item == "C") "Q" else "R"
+    prefix <- if (wave == 1L) "Q" else "R"
     value <- read_source_codes(survey, paste0(prefix, "5", item), c(-1, 1:4))
     as.numeric(value %in% correct)
   })
   prefix <- if (wave == 1L) "Q" else "R"
   succession <- read_source_codes(survey, paste0(prefix, "8A"), c(-1, 1:9))
   items$succession <- as.numeric(succession %in% 5)
-  as.matrix(tibble::as_tibble(items))
+  result <- as.matrix(tibble::as_tibble(items))
+  if (wave == 2L) {
+    result[monarchy_departure_observed(survey) %in% FALSE, ] <- NA_real_
+  }
+  result
 }
 
 monarchy_demographics <- function(survey) {
-  school <- read_source_codes(survey, "B12A", 1:6)
-  qualification <- read_source_codes(survey, "B12B", 1:14)
+  school <- recode_source_values(survey, "B12A", c(1:5, NA_real_))
+  qualification <- recode_source_values(survey, "B12B", c(1:13, NA_real_))
   education <- dplyr::case_when(
     qualification %in% 7:11 ~ 1,
     qualification %in% 4:6 ~ .66,
@@ -64,16 +69,18 @@ monarchy_demographics <- function(survey) {
   )
   age_band <- read_source_codes(survey, "AGEB", 2:11)
   age_midpoints <- c(18.5, 25, 35, 45, 55, 65, 74, 83)
-  age <- dplyr::coalesce(age_midpoints[match(age_band, 2:9)], age_band)
+  age <- age_midpoints[match(age_band, 2:9)]
   tibble::tibble(
     female = as.numeric(read_source_codes(survey, "SEX", 1:2) != 1),
-    minority = as.numeric(read_source_codes(survey, "B16", 1:8) != 1),
+    minority = recode_source_values(survey, "B16",
+      c(0, rep(1, 6), NA_real_)
+    ),
     age = age,
     education_four = education,
     education_three = collapse_historical_education(education),
-    higher_education = as.numeric(education >= .33),
+
     political_interest_t1 = recode_source_values(survey, "A6",
-      c(1, .66, .33, 0, NA_real_, 6)
+      c(1, .66, .33, 0, NA_real_, NA_real_)
     )
   )
 }
@@ -92,7 +99,7 @@ build_monarchy_individual <- function(
       attitude_extremity = historical_available_mean(abs(
         as.matrix(baseline) - .5
       )),
-      household_income = NA_real_, high_income = NA_real_,
+      household_income = NA_real_,
       read_briefing = NA_real_, knowledge_joint_midterm = NA_real_,
       knowledge_midterm = NA_real_, knowledge_midterm_joint = NA_real_,
       attitude_extremity_midterm = NA_real_

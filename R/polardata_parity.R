@@ -1,7 +1,24 @@
+verified_covariance_values <- function(actual, group, audit,
+                                       reference = NULL, tolerance = 1e-10) {
+  rows <- match(group, audit$pollgroup)
+  verified <- !is.na(rows) & audit$numerical_exception[rows] &
+    is.finite(actual) & actual >= 0 &
+    actual <= audit$perturbation_upper[rows] &
+    abs(actual - audit$source_genvar[rows]) <= tolerance
+  if (!is.null(reference)) {
+    verified <- verified & is.finite(reference) & reference >= 0 &
+      reference <= audit$perturbation_upper[rows] &
+      abs(reference - audit$benchmark_genvar[rows]) <= tolerance
+  }
+  verified[is.na(verified)] <- FALSE
+  verified
+}
+
 compare_historical_polardata <- function(rebuilt, reference, numerical_audit,
                                          tolerance = 1e-10) {
-  stopifnot(identical(names(rebuilt), names(reference)),
-    nrow(rebuilt) == nrow(reference), nrow(rebuilt) == 6084L,
+  stopifnot(
+    identical(names(rebuilt), names(reference)),
+    nrow(rebuilt) == 5869L, nrow(reference) == 6084L,
     !anyNA(rebuilt$X), all(rebuilt$X == seq_len(nrow(rebuilt)))
   )
   contracts <- read_metadata("respondent_sources")
@@ -9,19 +26,43 @@ compare_historical_polardata <- function(rebuilt, reference, numerical_audit,
     contract <- contracts[index, ]
     actual <- rebuilt[rebuilt$dpnum == contract$dpnum, ]
     expected <- reference[reference$dpnum == contract$dpnum, ]
-    stopifnot(nrow(actual) == nrow(expected))
+    rebuilt_count <- nrow(actual)
+    if (contract$poll_id == "btp-general-election-2004") {
+      added <- btp_ge_approved_inclusions()
+      new_people <- actual[!actual$caseid %in% expected$caseid, ]
+      added <- added[match(new_people$caseid,
+                           added$historical_caseid), ]
+      stopifnot(
+        rebuilt_count == 248L, nrow(expected) == 246L,
+        nrow(new_people) == 2L, !anyNA(added$historical_caseid),
+        identical(as.numeric(new_people$pollgroup),
+                  as.numeric(added$pollgroup)),
+        all(abs(new_people$t2know -
+                  added$post_knowledge_correct) <= tolerance),
+        all(abs(new_people$attextreme -
+                  added$attitude_extremity) <= tolerance)
+      )
+      actual <- actual[actual$caseid %in% expected$caseid, ]
+    } else {
+      expected_rows <- if (contract$poll_id ==
+                             "btp-presidential-primaries-2004") 2L else 1L
+      stopifnot(nrow(expected) == nrow(actual) * expected_rows)
+    }
     actual <- historical_reference_people(actual, contract$poll_id)
     expected <- historical_reference_people(expected, contract$poll_id)
     stopifnot(setequal(actual$caseid, expected$caseid))
     expected <- expected[match(actual$caseid, expected$caseid), ]
     audit <- numerical_audit[
       numerical_audit$poll_id == contract$poll_id &
-        numerical_audit$numerical_exception,
+        numerical_audit$reference_kind == "historical",
     ]
-    audit_rows <- match(actual$pollgroup, audit$pollgroup)
-    verified_numeric <- !is.na(audit_rows) &
-      abs(actual$genvar - audit$source_genvar[audit_rows]) <= tolerance
-    verified_numeric[is.na(verified_numeric)] <- FALSE
+    approved_audit <- numerical_audit[
+      numerical_audit$poll_id == contract$poll_id &
+        numerical_audit$reference_kind == "approved",
+    ]
+    verified_numeric <- verified_covariance_values(
+      actual$genvar, actual$pollgroup, audit, tolerance = tolerance
+    )
     purrr::map_dfr(names(actual), function(field) {
       a <- actual[[field]]
       b <- expected[[field]]
@@ -39,20 +80,50 @@ compare_historical_polardata <- function(rebuilt, reference, numerical_audit,
       } else {
         difference[observed] <- a[observed] != b[observed]
       }
+      approved <- approved_reference_values(
+        contract$poll_id, field, actual$caseid, b, tolerance
+      )
+      approved_changed <- is.na(approved) != is.na(b)
+      both_approved <- !is.na(approved) & !is.na(b)
+      approved_changed[both_approved] <- if (is.numeric(b)) {
+        abs(approved[both_approved] - b[both_approved]) > tolerance
+      } else {
+        approved[both_approved] != b[both_approved]
+      }
+      approved_changed[is.na(approved_changed)] <- FALSE
+      matches_approved <- is.na(a) & is.na(approved)
+      observed_approved <- !is.na(a) & !is.na(approved)
+      matches_approved[observed_approved] <- if (is.numeric(a)) {
+        abs(a[observed_approved] - approved[observed_approved]) <= tolerance
+      } else {
+        a[observed_approved] == approved[observed_approved]
+      }
+      matches_approved[is.na(matches_approved)] <- FALSE
       numerical <- difference & field == "genvar" &
         verified_numeric
+      approved_numerical <- rep(FALSE, length(a))
+      if (field == "genvar") {
+        approved_numerical <- approved_changed & !matches_approved &
+          verified_covariance_values(
+            a, actual$pollgroup, approved_audit, approved, tolerance
+          )
+      }
       artifact <- field == "X"
       tibble::tibble(
         poll_id = contract$poll_id, legacy_field = field,
-        respondents = nrow(actual), compared_values = sum(observed),
+        respondents = rebuilt_count, compared_values = sum(observed),
         missingness_differences = sum(missing),
         value_differences = sum(difference),
-        reviewed_numerical_differences = sum(numerical),
+        reviewed_numerical_differences = sum(numerical | approved_numerical),
+        approved_correction_differences = sum(
+          approved_changed & matches_approved
+        ),
         export_artifact = artifact,
         unexplained_differences = if (artifact) {
           0L
         } else {
-          sum(missing | (difference & !numerical))
+          sum((missing | (difference & !numerical)) & !approved_changed) +
+            sum(approved_changed & !matches_approved & !approved_numerical)
         },
         max_absolute_difference = max(error), tolerance = tolerance
       )

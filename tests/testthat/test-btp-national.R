@@ -2,6 +2,7 @@ source(file.path(root, "R", "respondents.R"))
 source(file.path(root, "R", "respondent_btp_general.R"))
 source(file.path(root, "R", "respondent_btp_health.R"))
 source(file.path(root, "R", "respondent_btp_national.R"))
+source(file.path(root, "R", "respondent_parity.R"))
 source(file.path(root, "R", "polardata_derived.R"))
 source(file.path(root, "R", "polardata_assembly.R"))
 source(file.path(root, "R", "polardata_btp_reviewed.R"))
@@ -18,6 +19,8 @@ national_test_source <- function() {
 test_that("National recodes need raw answers, not stored scale columns", {
   survey <- national_test_source()
   expected <- build_btp_national_individual(survey)
+  expect_equal(expected$political_interest_t1, as.numeric(survey$t1polint),
+               tolerance = 0)
   raw <- survey[, grepl("^(qb|qf|pp)", names(survey))]
   expect_equal(build_btp_national_individual(raw), expected)
   index <- c(245L, 80L, 1L)
@@ -38,8 +41,8 @@ test_that("National preserves climate-placement thresholds and nonresponse", {
   expect_equal(items[, "democratic"], c(0, 0, 1, 1, 0))
   expect_equal(items[, "republican"], c(0, 1, 1, 0, 0))
   survey$qb22 <- c(1, 2, 3, 4, -1)
-  components <- btp_national_item(survey, "qb22", "support") / 2
-  expect_equal(components, c(.5, 0, .25, NA_real_, NA_real_))
+  components <- btp_national_item(survey, "qb22", "support")
+  expect_equal(components, c(1, 0, .5, NA_real_, NA_real_))
 })
 
 test_that("National respondent and aggregate values retain historical parity", {
@@ -62,8 +65,8 @@ test_that("National respondent and aggregate values retain historical parity", {
     logpk = "log_knowledge_joint", tobitpk = "high_knowledge_joint",
     ppage = "age", female = "female", minority = "minority",
     educ4 = "education_four", educ3 = "education_three",
-    bettered = "higher_education", hhincome = "household_income",
-    highinc = "high_income", attextreme = "attitude_extremity",
+    hhincome = "household_income",
+    attextreme = "attitude_extremity",
     readbrief = "read_briefing", t1polint = "political_interest_t1",
     t1knowcor2 = "knowledge_joint_midterm", t12know = "knowledge_midterm",
     t12knowcor = "knowledge_midterm_joint",
@@ -80,17 +83,34 @@ test_that("National respondent and aggregate values retain historical parity", {
     keys <- paste0("btp03.olt", wave, names(attitudes))
     mapping[keys] <- paste0(attitudes, "_t", wave)
   }
+  corrected <- c(
+    "btp03.olt1demo", "btp03.olt2demo", "t1polint",
+    "btp03.olt1global", "btp03.olt2global", "attextreme"
+  )
   for (field in names(mapping)) {
     value <- actual[[mapping[[field]]]][index]
+    if (field %in% corrected) {
+      expected[[field]] <- approved_reference_values(
+        "btp-national-2003", field, expected$caseid, expected[[field]]
+      )
+    }
     expect_identical(is.na(value), is.na(expected[[field]]), info = field)
     expect_equal(value, as.numeric(expected[[field]]),
       tolerance = 1e-10,
       info = field
     )
   }
-  values <- tibble::tibble(source_row = survey$source_row[index])
+  values <- tibble::tibble(
+    source_row = survey$source_row[index],
+    hhincome = actual$household_income[index]
+  )
   derived <- build_btp_national_derived(survey, values)
   for (field in names(derived)) {
+    if (field %in% c("meanxtreme", "avgsd", "genvar", "entropy", "phighinc")) {
+      expected[[field]] <- approved_reference_values(
+        "btp-national-2003", field, expected$caseid, expected[[field]]
+      )
+    }
     expect_identical(is.na(derived[[field]]), is.na(expected[[field]]),
       info = field
     )

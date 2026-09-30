@@ -1,5 +1,78 @@
 # Changelog
 
+## Unreleased
+
+- Include Tanzania's borrowing question using its five documented categories,
+  and export all 22 policy items with source answers, normalized citizen values,
+  discussion-round assignments and verified baseline/follow-up phases. Preserve
+  the other 21 items and retain noncitizen source rows without applying citizen
+  scales or timing.
+
+- Preserve all 13 supplied weight columns across nine polls in typed tables,
+  including source identities, missing values and zero weights. Analytical use
+  remains undecided; existing selected analysis weights are unchanged.
+- Compare Tomorrow's Europe pre-arrival attitudes with exit in the seven main
+  indices, and retain arrival-to-exit definitions in a typed contrast catalog.
+  Respondent scores and samples are unchanged.
+- Reproduce all 93 climate-report rating means at both waves and their changes,
+  documenting its paired-item samples and supplied weights.
+
+- Expose approved within-poll education and income median flags as nullable
+  booleans in analysis participant tables. Preserve fixed reference cohorts and
+  identify legacy education proxies as source-specific.
+- Exclude absent selected interviews from paired panels while retaining people
+  and observed waves: 43 Primaries follow-ups, ten California baselines and
+  243 Northern Ireland follow-up-only records.
+
+- Define peer learning opportunity as zero at full knowledge through one shared
+  rule. This changes 315 derived cells for 107 people across 12 polls; absent
+  interviews remain missing. Typed names now describe opportunity and identify
+  the exclusion of the focal respondent.
+- Treat Tanzania's -99 first-component codes as missing and rebuild the existing
+  baseline-control standardized index. Preserve all observed scores and correct
+  the one follow-up-only panel flag.
+
+- Order UK Health government/public and doctor-input responses consistently:
+  none = 0, some = 0.5, all/most = 1. Recalculate dependent attitude summaries
+  without changing participants, knowledge scores or missingness.
+
+- Correct Australia's peer-knowledge denominator from 11 to the 12 scored
+  questions. All 347 participants and their individual knowledge scores remain
+  unchanged; 346 peer measures and their logs change.
+
+- Retain AMR's original questionnaire, expert answer key, codebooks and paper;
+  preserve its verified pre-invitation and post-deliberation measurements in
+  phase tables without changing scores or samples. Document the conflicting
+  questionnaire options and country-specific weighting requirements.
+- Label documented nonanswers in A1R 2019, Northern Ireland's follow-up and six
+  climate knowledge items as non-substantive, preserving their zero scores.
+  Retain original climate and Tanzania replication scripts as coding evidence.
+
+- Apply the poll-specific corrections documented in `docs/poll-issues.md`, with
+  unchanged source answers and independently checked correction values. The
+  issue register distinguishes adopted changes, retained definitions, proposed
+  corrections and unavailable source evidence; the audit is not yet closed.
+- Export 5,869 unique historical poll/person records, removing duplicate
+  Primaries rows and retaining two BTP General Election respondents with
+  observed exit questionnaires but no correct knowledge answers.
+- Use empirical participant medians for high/low education and income, with
+  fixed reference populations and the same individual flags in group summaries.
+- Calculate female shares among observed peers with a common denominator,
+  including respondents whose own gender is missing.
+- Put UK Health severity preferences on a fixed scale across waves and rebuild
+  individual extremity and group summaries from the corrected indices.
+- Derive UK Health degree attainment from its explicit qualification question
+  instead of treating A-level school qualifications as a degree.
+- Preserve verified survey phases, questionnaire presence, recruitment frames,
+  controls and follow-ups in typed Parquet. Add arrival scores for California,
+  Europolis, Denmark, Vermont and Michigan, keeping their different batteries
+  separate, and publish a typed phase item-response table.
+- Identify climate-study completers as completed; distinguish other invitees
+  from people known not to have attended.
+- Retain the UK Health index memorandum with a PDF preview. Remove the misfiled
+  Europolis questionnaire duplicate after checking its content against the
+  existing Tomorrow's Europe original and PDF.
+
 ## 0.3.0
 
 - Reconstruct all 848 respondent-field targets across the 21 historical polls
@@ -59,4 +132,3 @@ replace downstream historical polardata inputs.
 - Add immutable public inputs used by `dp-learning`.
 - Record checksums for the historical CDD archive bundles without publishing
   unreviewed respondent files.
-

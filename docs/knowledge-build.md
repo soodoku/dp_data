@@ -60,6 +60,24 @@ records their license as not specified.
 
 ## Selection, scoring, and missing values
 
+Numeric missing-value sentinels are excluded from numerical arithmetic before
+scoring or calibration. Their substantive meaning comes from the source
+instrument: an observed quiz response coded don't know can score incorrect,
+while an unavailable component stays missing. An absent questionnaire has no
+score; individual blanks in a completed questionnaire do not imply absence.
+Paired comparisons require both relevant interviews, without discarding earlier
+source records needed to study selection or attrition.
+
+The shared peer-learning measure represents opportunity to learn from other
+group members on items the respondent missed. It is zero when all scored items
+are correct, or when peers know none of the missed items. An absent interview,
+unavailable battery, or absent peer group remains missing. This convention is
+implemented centrally; the four legacy gain fields retain their source-specific
+batteries and timing. Typed measure names identify peer learning opportunity,
+not observed knowledge gain, and their scope is `leave_one_out`. Existing log
+outputs retain their 0.0001 floor. Definition version `peer-opportunity-v2`
+distinguishes the approved ceiling rule from the historical convention.
+
 UK Health uses all 230 source records. `serial_m` is the poll-specific respondent
 ID, `group` gives group membership, and `gender` codes 1/2 become female 0/1.
 The six factual responses are `sopha` through `sophf` at each wave. The answer
@@ -140,7 +158,9 @@ source wave numbers; source column names remain in the item map.
 
 The stored `output/manifest.csv` provides the checksum of each exported file.
 Consumers should pin a repository commit and verify those checksums. The
-attitude-index and control-battery builds are still pending.
+control-study item batteries are included in the
+[canonical analysis tables](analysis-tables.md). Attitude-index work is tracked
+separately.
 
 ## Reproduction and checks
 
@@ -216,8 +236,9 @@ rounded values on page 17 of the Cor–Sood manuscript.
 
 Release `v0.1.0` preserves the aggregate and historical linkage before source
 reconstruction. `make polardata` begins the next stage: reproducing existing
-values from reviewed poll-level responses. Corrections and a broader schema
-remain later stages, governed by the [issue register](poll-issues.md).
+values from reviewed poll-level responses. Poll-specific corrections require
+user approval based on evidence in the [issue register](poll-issues.md); a broader
+schema remains a later stage.
 New discrepancies or questionable definitions discovered while building must be
 recorded there with source/version, code location, affected records, numerical
 impact, plausible explanations and the evidence still needed. Matching the old
@@ -225,11 +246,23 @@ aggregate does not clear a definition for substantive use. A failed parity check
 is an investigation trigger; do not update the benchmark to make it pass.
 
 The full build writes `output/polardata/polardata.parquet` and `polardata.tab`
-with 6,084 rows and the 364 historical columns, plus the 129-row attitude catalog
+with 5,869 unique poll/person rows and the 364 historical columns, plus the 129-row attitude catalog
 and typed derived measures. All 21 polls build from public source materials;
 `make compare-polardata` evaluates historical agreement separately. Generalized
-variance has explicitly audited numerical exceptions in 24 groups, and export
-row numbers are regenerated. See the [architecture](architecture.md) and
+variance has explicitly audited numerical exceptions in 23 groups, and export
+row numbers are regenerated. Approved UKC-01 replaces baseline policing with the
+post-wave children item in the UK Crime root-causes index. Approved UKGE-03 uses
+`wagel2` in UK Election 1997 post knowledge, updating dependent respondent and
+group/poll quantities while preserving its sample and attitude definitions.
+Approved NIC-03 converts two-digit birth years using `96 - BYEAR`, rebuilds
+group mean age and sets the event mode to in person (`0`). All 466 historical
+records remain, including the uniquely missing historical identity. NIC-08
+subsequently corrects or withholds unsupported derived ages; raw answers remain
+available. PR-03 removes duplicate Primaries export rows, and BTPGE-05 restores
+two observed exit questionnaires previously excluded for zero correct answers.
+Comparison checks
+verify the exact approved respondent values against the retained review evidence;
+the original historical benchmark is unchanged. See the [architecture](architecture.md) and
 [poll issue register](poll-issues.md) for samples, historical quirks and
 comparison rules. No downstream consumer is switched by this release.
 Historical benchmarks, canonical knowledge tables and linkage outputs remain
@@ -246,7 +279,7 @@ equal to `serial_a`, unique and nonmissing. The 22 attitude columns are doubles,
 exact historical names `ukhealth.t{1,2}{suffix}` and take values in [0, 1] or
 missing. Source wave suffixes 1 and 2 are retained. Their definitions are:
 
-| Suffix | Raw source stems, separately in each wave | Historical formula |
+| Suffix | Raw source stems, separately in each wave | Current formula |
 |---|---|---|
 | payhlt | payhlth | Three-category scaling; higher means individual payment |
 | poora | poora | Five-category scaling; higher means more priority to the poor |
@@ -254,10 +287,10 @@ missing. Source wave suffixes 1 and 2 are retained. Their definitions are:
 | hlthfu | chgp, chvis, chmeal, chstay, chamb | Available-item mean of five-category scores |
 | ctexpt | treata, cthart, ctnurs, ctbaby | Available-item mean of reversed five-category scores |
 | pritre | ctfert, cthosp, ctcosm | Available-item mean of reversed five-category scores |
-| severi | lista, severa | Scaled lista minus scaled severa, then empirical min–max scaling within each wave over all 230 source records with both answers |
+| severi | lista, severa | Scaled lista minus scaled severa; map its fixed possible range [-1,1] to [0,1] in both waves; require both answers |
 | preven | preva | Five-category scaling; higher means more priority to prevention |
-| dispub | ingova, inpuba | Available-item mean after mapping raw 1 and 3 to 1, raw 2 to 0.5 |
-| avgdis | ingpa, indoca | Same folded recode and available-item mean, for doctor input |
+| dispub | ingova, inpuba | Available-item mean after mapping none/some/all-or-most to 0/0.5/1 |
+| avgdis | ingpa, indoca | Same ordered recode and available-item mean, for doctor input |
 | moresa | say | Five-category scaling; higher means more patient say |
 
 Ordinary k-category scaling is `(raw - 1) / (k - 1)`; reversal is `1 - score`.
@@ -270,47 +303,50 @@ them. Denominator expansion belongs to the later schema review.
 
 The builder reads original response fields from the public survey, not its stored
 indices. The codebook and V6 index memo were consulted; their differences from the
-historical aggregate remain recorded under UKH-01–04. In particular, the severity
-direction, wave-specific rescaling, and non-monotonic discretion map are reproduced
-without being endorsed or corrected. The supplied survey is already a merged
+historical aggregate remain recorded under UKH-01–04. The documented severity
+direction is retained; the approved UKH-02/09 correction uses the same fixed
+scale in both waves and recomputes dependent summaries. The approved UKH-03/07
+correction orders government/public and doctor-input responses as 0/0.5/1.
+The supplied survey is already a merged
 participant file; reconstructing its earlier field-file merge remains unfinished.
 
 The comparison joins on unique `caseid` within dpnum 2 and requires the same 230
 IDs on both sides. No unmatched or duplicated IDs are allowed. All 71 reconstructed non-key
-columns must have identical missingness and values within absolute tolerance
-`1e-10` before an output is written. `audit/polardata_parity.csv` records counts,
+columns must match either the historical benchmark or independently derived,
+explicitly approved correction values, including missingness, within absolute
+tolerance `1e-10`. `audit/polardata_parity.csv` records counts,
 missingness differences, numerical differences and maximum absolute error for
 each field. The benchmark is read only for this check; it supplies no rebuilt
 values. A Parquet round trip must preserve values and types exactly.
 
 
-The 23 demographic and attitude-summary fields preserve these historical definitions:
+The 23 demographic and attitude-summary fields use these reviewed definitions:
 
 | Fields | Sources and definitions |
 |---|---|
 | female, minority | Numeric 0/1 from gender == 2 and ethnic != 1; the reviewed sample has only substantive codes 1:2 and 1:8 |
 | ppage | Numeric age in years; all 230 are observed adults |
 | educ4 | B11 educa codes 0/1/2/3/4 map to 0/.33/.66/1/.66; two -9 responses missing |
-| educ3, bettered | Numeric 0/.5/1 from educ4 (intermediate categories collapse to .5); logical educ4 >= .66; preserve missingness |
-| hhincome, highinc | Numeric (income - 1)/15 for bands 1:16, with -9/-8/-7 missing; logical final flag hhincome > .34 |
+| educ3, bettered | Numeric 0/.5/1 from educ4 (intermediate categories collapse to .5); bettered is strictly above the observed participant median of .66; preserve missingness |
+| hhincome, highinc | Numeric (income - 1)/15 for bands 1:16, with -9/-8/-7 missing; highinc is strictly above the observed participant median of 1/3 |
 | pollgroup, groupsize | Numeric 2200 + source group (1:15); number of surveyed people in that group, including those with missing demographic answers |
 | pfemale, pminority | Available-case group means of female and minority |
 | varfemale, sdfemale | pfemale*(1-pfemale) and its square root; Bernoulli population variance convention |
 | vareduc, sdeduc | Within-group sample variance of observed educ4, denominator n-1, and its square root |
 | meaned, meanage | Available-case group means of educ4 and ppage |
-| phighinc | Available-case group mean of the earlier flag hhincome > .8; deliberately preserves the historical difference from final highinc pending UKH-08 |
-| pfemale_ind | (pfemale*groupsize-female)/(groupsize-1); all group sizes exceed one and gender is complete |
-| attextreme | Available-item mean of abs(index-.5) over the 11 T1 indices before severity rescaling |
-| meanxtreme | Available-case group mean of that historical attextreme |
-| avgsd | Mean of the 11 within-group sample SDs using those same early index versions |
+| phighinc | Available-case group mean of the same individual highinc flag; X-13 supersedes the former group-only threshold |
+| pfemale_ind | Female share among other group members with observed gender; the shared helper uses observed peer counts, although gender is complete in this UK Health sample |
+| attextreme | Available-item mean of abs(index-.5) over the 11 corrected T1 indices, with severity on the fixed [0,1] scale |
+| meanxtreme | Available-case group mean of that respondent attextreme |
+| avgsd | Mean of the 11 within-group sample SDs using those same corrected respondent indices |
 
 All group summaries are doubles repeated for members of the same discussion
 group. There are 15 groups with 13–17 respondents each. The codebook's A1/A2,
 B11/B17/B18 and Q18/Q23 items, the V6 index memo, the poll script, and merge
 scripts 03/05/06 establish the definitions and assignment order. Issues UKH-07–10
-record the retained index inventory, differing income thresholds, attitude-summary
-versions and the knowledge-precision question. This output replaces the
-initial attitudes-only partial file; no old values are dropped or revised.
+record the retained index inventory, corrected income thresholds and attitude
+summaries, and the knowledge-precision question. This output replaces the
+initial attitudes-only partial file; the frozen benchmark preserves prior values.
 Entropy, generalized variance and remaining poll descriptors are still outside
 this partial reconstruction.
 
@@ -361,10 +397,19 @@ measure. Those investigations remain separate from reproduction.
 
 The original knowledge outputs keep their existing samples and scoring rules.
 `make respondents` creates separate tables in `output/respondent/` for all
-reviewed source records within the 21-poll historical scope. Its UK Health,
-UK–EU, UK Monarchy, 1997 UK election, UK Crime, CPL, WTU and SWEPCO definitions reproduce historical
-respondent measures; other polls retain
-raw registered knowledge fields while respondent reconstruction remains pending.
+reviewed source records within the 21-poll historical scope, covering all 848
+historical respondent-field targets. Definitions preserve historical coding
+except for explicitly approved corrections. UK Crime
+`root_causes_t2@ukc-01-v2` uses only post-wave children, television and school
+discipline responses; available-component averaging and the historical sample
+are unchanged. Its raw input links and observed-component counts reflect these
+three post-wave fields. UK Election 1997 uses `ukge-03-v2` for six post-dependent
+knowledge definitions and ten affected group/poll derived fields. The correction
+changes 54 attendee post knowledge scores and removes the baseline-only post
+contribution for 721 other source records. Baseline knowledge and its float
+precision convention remain unchanged. NIC `age@nic-03-v2` and derived
+`meanage` use the corrected age units. The approved mode definition is recorded
+as `mode@nic-03-v2` in the correction evidence and source findings.
 See the [stage contracts](architecture.md#respondent-reconstruction-before-aggregation),
 [coverage](../audit/respondent_coverage.csv), and
 [historical comparison](../audit/respondent_parity.csv).

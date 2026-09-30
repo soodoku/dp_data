@@ -30,15 +30,18 @@ build_europolis_individual <- function(
   climate <- (10 - read("V1Q21", 0:10)) / 10
   immigration <- (read("V1Q11_1", 1:5) - 1) / 4
   birth_year <- read("age1", 1900:1991)
+  age <- 2009 - birth_year
+  age[birth_year == 1900] <- NA_real_
   education <- read("educ1", 0:35)
   studying <- which(education == 0)
   education[studying] <- pmin(2010 - birth_year, 35)[studying]
   education <- round(education / 35, 2)
   birth <- read("birth1", 1:5)
   parents <- read("parentsbirth1", 1:4)
-  minority <- as.numeric(
-    ifelse(is.na(birth), 1, birth > 1) +
-      ifelse(is.na(parents), 1, parents > 1) > 0
+  minority <- dplyr::case_when(
+    birth > 1 | parents > 1 ~ 1,
+    birth == 1 & parents == 1 ~ 0,
+    .default = NA_real_
   )
   extremity <- rowMeans(abs(cbind(climate, immigration) - .5), na.rm = TRUE)
   extremity[is.nan(extremity)] <- NA_real_
@@ -52,11 +55,11 @@ build_europolis_individual <- function(
     knowledge_gain_joint = NA_real_, log_knowledge_joint = NA_real_,
     high_knowledge_joint = NA_real_, knowledge_midterm = NA_real_,
     knowledge_midterm_joint = NA_real_, knowledge_joint_midterm = NA_real_,
-    age = 2009 - birth_year, female = as.numeric(read("sex1", 1:2) == 2),
+    age = age, female = as.numeric(read("sex1", 1:2) == 2),
     minority = minority, education_four = education,
     education_three = collapse_historical_education(education),
-    higher_education = as.numeric(education > .57),
-    household_income = NA_real_, high_income = NA_real_,
+
+    household_income = NA_real_,
     political_interest_t1 = NA_real_, read_briefing = NA_real_,
     attitude_extremity = extremity, attitude_extremity_midterm = NA_real_
   )

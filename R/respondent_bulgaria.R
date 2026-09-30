@@ -18,7 +18,7 @@ bulgaria_attitudes <- function(survey, wave) {
     institutional_change = response("q21", c(0, 1), 3),
     independent_investigation = response("q22", c(0, 1), 3),
     prosecution = response("q23", c(0, 0, 1), 4),
-    death_penalty = response("q19", c(1, .75, .5, .25))
+    death_penalty = response("q19", c(1, 2 / 3, 1 / 3, 0))
   )
 }
 
@@ -45,6 +45,10 @@ build_bulgaria_individual <- function(
   education <- recode_source_values(survey, "edu", c(1, .66, .33, 0, 0), 0)
   income <- read_source_codes(survey, "incomes", 0:6)
   income <- dplyr::if_else(income == 0, NA_real_, income + 1)
+  ethnicity <- read_source_codes(survey, "ethnos", 0:4)
+  minority <- dplyr::if_else(
+    ethnicity == 0, NA_real_, as.numeric(ethnicity != 1)
+  )
   dplyr::bind_cols(
     dplyr::rename_with(baseline, \(name) paste0(name, "_t1")),
     dplyr::rename_with(post, \(name) paste0(name, "_t2")),
@@ -54,11 +58,11 @@ build_bulgaria_individual <- function(
     tibble::tibble(
       age = read_source_codes(survey, "age_full", 18:100),
       female = as.numeric(read_source_codes(survey, "sex", 1:2) == 2),
-      minority = as.numeric(read_source_codes(survey, "ethnos", 0:4) != 1),
+      minority = minority,
       education_four = education,
       education_three = collapse_historical_education(education),
-      higher_education = as.numeric(education >= .66),
-      household_income = income, high_income = as.numeric(income > 2),
+
+      household_income = income,
       attitude_extremity = historical_available_mean(abs(
         cbind(as.matrix(baseline), drug_index) - .5
       )),

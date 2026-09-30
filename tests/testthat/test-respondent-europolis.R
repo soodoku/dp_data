@@ -12,6 +12,25 @@ test_that("Europolis is reconstructed from raw questions", {
   raw <- survey[, match(tolower(fields), tolower(names(survey)))]
   built <- build_europolis_individual(raw)
   expect_equal(built, build_europolis_individual(survey))
+  birth_year <- as.numeric(unclass(survey$age1))
+  expect_equal(sum(birth_year == 1900), 7L)
+  expect_true(all(is.na(built$age[birth_year == 1900])))
+  expect_equal(built$age[birth_year != 1900],
+               2009 - birth_year[birth_year != 1900])
+  approved <- readr::read_csv(project_path(
+    "audit", "corrections", "europolis-2009", "approved_values.csv"
+  ), show_col_types = FALSE)
+  changed <- which(is.na(built$minority))
+  expect_equal(survey$source_row[changed], approved$source_row)
+  expect_equal(as.character(survey$UniqueID[changed]),
+               as.character(approved$respondent_id))
+  expect_true(all(approved$historical_minority == 1))
+  expect_true(all(is.na(approved$approved_minority)))
+  birth <- europolis_source_codes(survey, "birth1", 1:5)
+  parents <- europolis_source_codes(survey, "parentsbirth1", 1:4)
+  confirmed_foreign <- (birth > 1 & !is.na(birth)) |
+    (parents > 1 & !is.na(parents))
+  expect_true(all(built$minority[confirmed_foreign] == 1))
   order <- rev(seq_len(nrow(raw)))
   expect_equal(build_europolis_individual(raw[order, ]), built[order, ])
   raw$V1Q21[1] <- 42
@@ -36,15 +55,17 @@ test_that("Europolis respondent values match historical identities", {
   mapping <- c(
     t1know = "knowledge_t1", t2know = "knowledge_t2", ppage = "age",
     female = "female", minority = "minority", educ4 = "education_four",
-    educ3 = "education_three", bettered = "higher_education",
+    educ3 = "education_three",
     attextreme = "attitude_extremity", eu2009.cc1 = "climate_t1",
     eu2009.cc2 = "climate_t2", eu2009.imm1 = "immigration_t1",
     eu2009.imm2 = "immigration_t2"
   )
-  for (field in names(mapping)) {
+  for (field in setdiff(names(mapping), "ppage")) {
     expect_equal(
       built[[mapping[[field]]]], as.numeric(benchmark[[field]]),
       tolerance = 1e-10
     )
   }
+  expect_equal(sum(is.na(built$age)), 1L)
+  expect_true(is.na(built$age[benchmark$caseid == 71300005619]))
 })

@@ -1,6 +1,8 @@
+source(project_path("R", "respondent_normalization.R"))
 source(project_path("R", "respondent_health.R"))
 source(project_path("R", "respondent_eu.R"))
 source(project_path("R", "respondent_recode.R"))
+source(project_path("R", "respondent_harmonized.R"))
 source(project_path("R", "respondent_monarchy.R"))
 source(project_path("R", "respondent_election.R"))
 source(project_path("R", "respondent_utilities.R"))
@@ -117,11 +119,39 @@ source_wave_label <- function(poll_id, wave) {
   paste0("T", wave)
 }
 
+source_nonanswer_codes <- function(labels) {
+  nonanswers <- c(
+    "don't know", "dk", "can't say", "can't choose", "couldn't say",
+    "refused", "ref", "no opinion", "no answer", "not answered",
+    "not asked", "not applicable",
+    "item not applicable", "skipped on web",
+    "haven't thought much about that", "haven't thought much about this",
+    "haven't thought much about it"
+  )
+  labels |>
+    dplyr::mutate(
+      label = tolower(trimws(gsub("[()]", "", value_label))),
+      label = sub("^[0-9]+[[:space:]]+", "", label)
+    ) |>
+    dplyr::summarise(
+      nonanswer = all(label %in% nonanswers),
+      .by = c("source_column", "source_value")
+    ) |>
+    dplyr::filter(nonanswer) |>
+    dplyr::select("source_column", "source_value")
+}
+
 source_response_rows <- function(survey, people, inputs, items) {
   fields <- union(inputs$source_column, items$source_column)
   stopifnot(all(fields %in% names(survey)))
+  ordinal_rules <- read_metadata("harmonized_ordinal_measures") |>
+    dplyr::filter(.data$poll_id == people$poll_id[[1]])
   dictionary_path <- project_path("data", people$poll_id[[1]], "variables.csv")
   dictionary <- readr::read_csv(dictionary_path, show_col_types = FALSE)
+  labels <- readr::read_csv(project_path(
+    "data", people$poll_id[[1]], "value-labels.csv"
+  ), col_types = readr::cols(.default = readr::col_character()))
+  nonanswer_codes <- source_nonanswer_codes(labels)
   purrr::map(fields, function(field) {
     raw <- survey[[field]]
     value <- if (is.numeric(raw)) {
@@ -131,6 +161,12 @@ source_response_rows <- function(survey, people, inputs, items) {
     }
     text <- if (is.character(raw)) raw else rep(NA_character_, length(raw))
     item <- items[items$source_column == field, ]
+    if (people$poll_id[[1]] == "tomorrows-europe-2007" &&
+          grepl("^t2q(19|2[0-7]|36[ab])$", field)) {
+      exit_field <- sub("^t2", "t3", field)
+      item <- items[items$source_column == exit_field, ]
+      stopifnot(nrow(item) == 1L)
+    }
     classified <- ifelse(abs(value - round(value)) < 1e-8, round(value), value)
     code <- ifelse(is.na(text), as.character(classified), text)
     missing <- is.na(value) & is.na(text)
@@ -142,6 +178,9 @@ source_response_rows <- function(survey, people, inputs, items) {
       as.character(dictionary_missing), "|",
       fixed = TRUE
     )))
+    known_missing <- union(known_missing, nonanswer_codes$source_value[
+      nonanswer_codes$source_column == field
+    ])
     range <- dictionary$missing_range[dictionary$source_column == field]
     range <- as.numeric(unlist(strsplit(
       as.character(range[!is.na(range)]), "|",
@@ -163,12 +202,48 @@ source_response_rows <- function(survey, people, inputs, items) {
         item$correct_values, item$incorrect_values
       ), "|", fixed = TRUE)))
     }
+    ordinal_rule <- ordinal_rules[ordinal_rules$source_column == field, ]
+    if (nrow(ordinal_rule) && !is.na(ordinal_rule$missing_codes[[1]])) {
+      known_missing <- union(known_missing, strsplit(
+        ordinal_rule$missing_codes[[1]], "|", fixed = TRUE
+      )[[1]])
+    }
+    if (people$poll_id[[1]] == "new-haven-2004" &&
+          grepl("^(pre|mid|post)_q(12|13|20|21|22|23)$", field)) {
+      known_missing <- union(known_missing, c("0", "6"))
+    }
+    if (people$poll_id[[1]] == "cpl-1996" &&
+      grepl(paste0(
+        "^(resch|fedrch|addfac|reduce|lowinc|poor|renew|wind|",
+        "fuels|buypwr|compet)[12]$"
+      ), field)) {
+      known_missing <- union(known_missing, "99")
+    }
+    if (people$poll_id[[1]] == "tomorrows-europe-2007") {
+      attitude_field <- grepl(paste0(
+        "^t[23]q(1|4|5[abcd]|7[acd]|8|11[abc]|12[abcd]|",
+        "16[abcfj]|17[a-i]|18[abcd])$"
+      ), field)
+      if (attitude_field) known_missing <- union(known_missing, "99")
+      invalid_codes <- c(t2q11a = "8", t3q16a = "10", t3q18c = "55")
+      if (field %in% names(invalid_codes)) {
+        known_missing <- union(known_missing, unname(invalid_codes[field]))
+      }
+    }
     status <- ifelse(missing, "system-missing", ifelse(
       code %in% known_missing | in_range, "non-substantive", ifelse(
         nrow(item) == 0L | code %in% known_values, "answered", "unreviewed-code"
       )
     ))
-    wave <- if (nrow(item)) {
+    wave <- if (people$poll_id[[1]] == "tomorrows-europe-2007") {
+      if (grepl("^q[0-9]+[a-z]*_1$", field)) {
+        "T1"
+      } else if (grepl("^t[23]q[0-9]+[a-z]*$", field)) {
+        paste0("T", substr(field, 2L, 2L))
+      } else {
+        NA_character_
+      }
+    } else if (nrow(item)) {
       source_wave_label(people$poll_id[[1]], item$wave[[1]])
     } else if (people$poll_id[[1]] == "uk-health-1998") {
       if (grepl("[12]$", field)) {
@@ -297,7 +372,10 @@ build_poll_respondents <- function(contract) {
     as.numeric(survey$participant) == 1
   } else if (poll_id == "btp-general-election-2004") {
     value <- build_btp_general_individual(survey)
-    value$knowledge_t2 > 0 & !is.na(value$attitude_extremity)
+    post_items <- paste0("w4f", c(60, 61, 62, 63, 64, 65, 66, 68, 69))
+    stopifnot(all(post_items %in% names(survey)))
+    post_observed <- rowSums(!is.na(survey[post_items])) > 0
+    post_observed & !is.na(value$attitude_extremity)
   } else {
     rep(NA, nrow(survey))
   }
@@ -324,8 +402,10 @@ build_poll_respondents <- function(contract) {
       "australia-republic-1999" = "aus_republic.R: nonmissing group except100",
       "tomorrows-europe-2007" = "eu_2007.R: nonmissing group_no",
       "europolis-2009" = "eu_2009.R: Group_T1bis == 1",
-      "btp-general-election-2004" =
-        "merge03: t2know > 0 and observed extremity",
+      "btp-general-election-2004" = paste(
+        "BTPGE-05: observed post knowledge response and extremity;",
+        "zero correct answers remain eligible"
+      ),
       "btp-health-education-2005" = "filter == 1; 454 records",
       "nic2-2003" = "casetype == 1; 340 records",
       "btp-national-2003" = "All 245 selected HLM source records",
@@ -383,6 +463,8 @@ build_poll_respondents <- function(contract) {
   )
   definitions <- read_metadata("measure_definitions") |>
     dplyr::filter(.data$poll_id == .env$poll_id)
+  harmonized <- read_metadata("harmonized_ordinal_measures") |>
+    dplyr::filter(.data$poll_id == .env$poll_id)
   inputs <- read_metadata("measure_inputs") |>
     dplyr::filter(.data$poll_id == .env$poll_id)
   items <- read_metadata("knowledge_items") |>
@@ -413,7 +495,18 @@ build_poll_respondents <- function(contract) {
   }
   measures <- if (!is.null(builder)) {
     values <- builder(survey)
-    individual_measure_rows(values, people, responses, definitions, inputs)
+    values <- normalize_demographic_flags(
+      values, historical, people$respondent_id,
+      education_normalization_values(values, survey, poll_id)
+    )
+    dplyr::bind_rows(
+      individual_measure_rows(
+        values, people, responses,
+        definitions[!definitions$definition_id %in%
+                      harmonized$definition_id, ], inputs
+      ),
+      harmonized_ordinal_rows(people, responses, harmonized)
+    )
   } else {
     tibble::tibble(
       poll_id = character(), respondent_id = character(),

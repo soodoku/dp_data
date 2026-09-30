@@ -1,7 +1,8 @@
 # These diagnostics belong to benchmark review, never respondent construction.
 covariance_fingerprint <- function(covariance) {
   digest::digest(
-    as.numeric(covariance), algo = "sha256", serialize = TRUE,
+    as.numeric(covariance),
+    algo = "sha256", serialize = TRUE,
     serializeVersion = 2
   )
 }
@@ -17,19 +18,10 @@ covariance_diagnostics <- function(attitudes) {
     covariance_sha256 = covariance_fingerprint(covariance),
     attitudes_sha256 = covariance_fingerprint(attitudes)
   )
-  if (anyNA(covariance)) {
-    eigenvalues <- rep(NA_real_, ncol(attitudes))
-  } else {
-    eigenvalues <- eigen(
-      covariance, symmetric = TRUE, only.values = TRUE
-    )$values
-  }
+  spectrum <- covariance_spectrum(covariance)
+  eigenvalues <- spectrum$values
   defined <- all(is.finite(eigenvalues))
-  tolerance <- if (defined) {
-    64 * .Machine$double.eps * ncol(attitudes) * max(abs(eigenvalues))
-  } else {
-    NA_real_
-  }
+  tolerance <- spectrum$tolerance
   rank <- if (defined) sum(abs(eigenvalues) > tolerance) else NA_integer_
   negative <- if (defined) sum(eigenvalues < -tolerance) else NA_integer_
   singular <- defined && rank < ncol(attitudes)
@@ -70,7 +62,8 @@ covariance_diagnostics <- function(attitudes) {
 }
 
 group_covariance_audit <- function(attitudes, group, poll_id,
-                                   benchmark = NULL, reviewed = NULL) {
+                                   benchmark = NULL, reviewed = NULL,
+                                   reference_kind = "historical") {
   stopifnot(nrow(attitudes) == length(group), length(poll_id) == 1L)
   result <- purrr::map_dfr(sort(unique(stats::na.omit(group))), function(id) {
     rows <- which(group == id)
@@ -95,7 +88,8 @@ group_covariance_audit <- function(attitudes, group, poll_id,
     key <- function(data) do.call(paste, c(data[keys], sep = "|"))
     result$reviewed_covariance <- key(result) %in% key(reviewed)
   }
-  result$numerical_exception <- with(result,
+  result$numerical_exception <- with(
+    result,
     reviewed_covariance & near_zero_eigenvalues > 0 &
       is.finite(source_genvar) & is.finite(benchmark_genvar) &
       benchmark_genvar >= 0 &
@@ -103,6 +97,7 @@ group_covariance_audit <- function(attitudes, group, poll_id,
       benchmark_genvar <= perturbation_upper
   )
   result$numerical_exception[is.na(result$numerical_exception)] <- FALSE
+  result$reference_kind <- reference_kind
   result
 }
 
@@ -111,13 +106,21 @@ audit_historical_covariances <- function(benchmark, reviewed = NULL) {
   polls <- c(
     "uk-eu-1995", "btp-health-education-2005", "san-mateo-2008", "zeguo-2005"
   )
-  purrr::map_dfr(polls, function(poll_id) {
+  historical <- purrr::map(polls, function(poll_id) {
     survey <- read_poll_survey(poll_id)
     profile <- if (poll_id == "uk-eu-1995") {
-      core_poll_profile(survey, poll_id)
+      historical <- core_poll_profile(survey, poll_id)
+      # Explain the frozen benchmark, which pooled unknown group markers.
+      historical$group[rounded_source_code(survey$group) %in% 99] <- 2099
+      for (stem in c("commies", "favref")) {
+        historical$attitudes[[paste0("ukeu.", stem, "1r")]] <-
+          (as.numeric(survey[[paste0(stem, "1")]]) - 1) / 8
+      }
+      historical
     } else if (poll_id == "zeguo-2005") {
       list(
-        attitudes = zeguo_attitudes(survey, 1L),
+        attitudes = zeguo_attitudes(survey, 1L) |>
+          dplyr::select(dplyr::ends_with("_midpoint_imputed")),
         group = ifelse(!is.na(survey$preandpost), 5200 + survey$groupnum, NA)
       )
     } else {
@@ -126,5 +129,29 @@ audit_historical_covariances <- function(benchmark, reviewed = NULL) {
     group_covariance_audit(
       profile$attitudes, profile$group, poll_id, benchmark, reviewed
     )
-  })
+  }) |>
+    purrr::list_rbind()
+  poll_id <- "uk-eu-1995"
+  profile <- core_poll_profile(read_poll_survey(poll_id), poll_id)
+  approved <- readr::read_csv(project_path(
+    "audit", "corrections", poll_id, "baseline_scale_approved_values.csv"
+  ), show_col_types = FALSE) |>
+    dplyr::filter(
+      .data$cohort == "historical_participants", .data$field == "genvar"
+    )
+  contracts <- read_metadata("respondent_sources")
+  dpnum <- contracts$dpnum[match(poll_id, contracts$poll_id)]
+  reference <- benchmark[benchmark$dpnum == dpnum, ]
+  rows <- match(reference$caseid, approved$caseid)
+  stopifnot(
+    nrow(approved) == 238L, !anyDuplicated(approved$caseid), !anyNA(rows),
+    all(abs(reference$genvar - approved$historical_value[rows]) <= 1e-10)
+  )
+  reference$genvar <- approved$proposed_value[rows]
+  corrected <- group_covariance_audit(
+    profile$attitudes, profile$group, poll_id, reference, reviewed,
+    reference_kind = "approved"
+  ) |>
+    dplyr::filter(.data$reviewed_covariance)
+  dplyr::bind_rows(historical, corrected)
 }

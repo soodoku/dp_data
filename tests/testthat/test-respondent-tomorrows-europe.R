@@ -4,6 +4,8 @@ source(file.path(root, "R", "respondent_tomorrows_europe.R"))
 test_that("tomorrows-europe uses raw questions independently of row order", {
   survey <- read_poll_survey("tomorrows-europe-2007")
   fields <- c(
+    "age",
+    "v_q36",
     "q11a_1",
     "q11b_1",
     "q11c_1",
@@ -83,6 +85,10 @@ test_that("tomorrows-europe uses raw questions independently of row order", {
     "t3q11a",
     "t3q11b",
     "t3q11c",
+    "t3q12a",
+    "t3q12b",
+    "t3q12c",
+    "t3q12d",
     "t3q16a",
     "t3q16b",
     "t3q16c",
@@ -120,7 +126,8 @@ test_that("tomorrows-europe uses raw questions independently of row order", {
     "t3q5d",
     "t3q7a",
     "t3q7c",
-    "t3q7d"
+    "t3q7d",
+    "t3q8"
   )
   raw <- survey[, match(tolower(fields), tolower(names(survey)))]
   built <- build_tomorrow_individual(survey)
@@ -164,9 +171,9 @@ test_that("tomorrows-europe matches every historical respondent target", {
     "minority" = "minority",
     "educ4" = "education_four",
     "educ3" = "education_three",
-    "bettered" = "higher_education",
+
     "hhincome" = "household_income",
-    "highinc" = "high_income",
+
     "t1polint" = "political_interest_t1",
     "attextreme" = "attitude_extremity",
     "attextreme2" = "attitude_extremity_midterm",
@@ -211,10 +218,36 @@ test_that("tomorrows-europe matches every historical respondent target", {
     "eu.t3q11br" = "military_never_t3",
     "eu.t3q16jr" = "enlargement_limit_t3"
   )
-  for (field in names(mapping)) {
+  corrected <- c("ppage", "educ4", "educ3")
+  for (field in setdiff(names(mapping), c(
+    "eu.mil_att_11_12_t3", "eu.free_trade_index_t3", corrected
+  ))) {
     expect_equal(
       built[[mapping[[field]]]], as.numeric(benchmark[[field]]),
       tolerance = 1e-10
     )
+  }
+  source_rows <- match(as.character(benchmark$caseid), ids)
+  education_code <- as.numeric(unclass(survey$q39))[source_rows]
+  source_age <- as.numeric(unclass(survey$age))[source_rows]
+  expect_equal(built$age, source_age)
+  expect_equal(sum(built$age != benchmark$ppage), 326L)
+  expect_equal(sum(!is.na(built$education_four)), 343L)
+  expect_equal(sum(education_code == 5L), 17L)
+  expect_true(all(built$education_four[education_code == 5L] == 1))
+  expect_true(all(built$education_three[education_code == 5L] == 1))
+
+  approved <- readr::read_csv(project_path(
+    "audit", "corrections", "tomorrows-europe-2007", "approved_values.csv"
+  ), show_col_types = FALSE)
+  expect_equal(nrow(approved), 344L * 11L)
+  for (field in c("eu.mil_att_11_12_t3", "eu.free_trade_index_t3")) {
+    evidence <- approved[approved$legacy_field == field, ]
+    position <- match(benchmark$caseid, evidence$caseid)
+    expect_false(anyNA(position))
+    expect_equal(as.numeric(benchmark[[field]]),
+                 evidence$historical_value[position], tolerance = 1e-10)
+    expect_equal(built[[mapping[[field]]]],
+                 evidence$approved_value[position], tolerance = 1e-10)
   }
 })

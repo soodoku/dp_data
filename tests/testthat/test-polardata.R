@@ -7,6 +7,70 @@ health_reference <- function() {
   )
 }
 
+test_that("Bulgaria attitude catalog names match the source questions", {
+  indices <- arrow::read_parquet(project_path(
+    "output", "polardata", "attitude-indices.parquet"
+  ))
+  fields <- paste0("bulgaria.bulgaria.t1", c(
+    "q10_3", "q16", "q21", "q22", "q23", "q19"
+  ))
+  labels <- indices$att_index[match(fields, indices$t1var)]
+  expect_equal(labels, c(
+    "Penalties for Drug Taking", "Allowing Vigilantism",
+    "Institutional Change", "Independence of Investigation Service",
+    "Place of Prosecution", "Death Penalty"
+  ))
+})
+
+test_that("NIC2 attitude catalog names match the final source indices", {
+  indices <- arrow::read_parquet(project_path(
+    "output", "polardata", "attitude-indices.parquet"
+  ))
+  fields <- paste0("nic2.t1", c(
+    "humrh2", "multi", "inter", "global", "demo", "forai1"
+  ))
+  labels <- indices$att_index[match(fields, indices$t1var)]
+  expect_equal(labels, c(
+    "Human Rights", "Multilateralism", "Internationalism",
+    "Fighting Poverty and Suffering", "Promoting Democracy",
+    "Increasing Foreign Aid"
+  ))
+})
+
+test_that("BTP National attitude catalog separates security and poverty", {
+  indices <- arrow::read_parquet(project_path(
+    "output", "polardata", "attitude-indices.parquet"
+  ))
+  fields <- paste0("btp03.olt1", c("usseca", "global"))
+  labels <- indices$att_index[match(fields, indices$t1var)]
+  expect_equal(labels, c(
+    "Fighting Terrorism", "Fighting Poverty and Suffering"
+  ))
+})
+
+test_that("NIC 1996 catalog names the nine spending questions", {
+  indices <- arrow::read_parquet(project_path(
+    "output", "polardata", "attitude-indices.parquet"
+  ))
+  fields <- paste0("nic1.t1att", 1:9)
+  labels <- indices$att_index[match(fields, indices$t1var)]
+  expect_equal(labels, paste("Spending on", c(
+    "Environment", "Medicare/Medicaid", "Law Enforcement",
+    "Drug Rehabilitation", "Education and Training", "National Defense",
+    "Foreign Aid", "Welfare", "Social Security"
+  )))
+})
+
+test_that("Monarchy public index is not labeled as royal powers", {
+  indices <- arrow::read_parquet(project_path(
+    "output", "polardata", "attitude-indices.parquet"
+  ))
+  label <- indices$att_index[
+    indices$t1var == "ukmonarchy.t1mpop"
+  ]
+  expect_equal(label, "Royal Family and the Public")
+})
+
 test_that("UK Health raw answers reproduce all 71 reconstructed fields", {
   rebuilt <- build_health_polardata()
   parity <- compare_health_polardata(rebuilt, health_reference())
@@ -29,10 +93,10 @@ test_that("stored indices cannot supply the reconstruction", {
   expect_identical(build_health_polardata(survey), expected)
 })
 
-test_that("historical folds and missingness are preserved without new codes", {
+test_that("Health ordered responses preserve missingness", {
   expect_equal(
-    historical_health_response(c(1, 2, 3, -9, -8, NA), 3L, TRUE),
-    c(1, 0.5, 1, NA, NA, NA)
+    historical_health_response(c(1, 2, 3, -9, -8, NA), 3L),
+    c(0, 0.5, 1, NA, NA, NA)
   )
   expect_equal(
     historical_available_mean(rbind(c(NA, 0.5), c(NA, NA))),
@@ -70,17 +134,26 @@ test_that("unreviewed survey codes stop the build", {
 })
 
 
-test_that("historical summary vintages remain distinct", {
+test_that("group summaries use the final individual definitions", {
   rebuilt <- build_health_polardata()
   final_share <- ave(as.numeric(rebuilt$highinc), rebuilt$pollgroup,
     FUN = function(x) mean(x, na.rm = TRUE)
   )
-  expect_true(all(abs(final_share - rebuilt$phighinc) > 1e-10))
+  expect_equal(final_share, rebuilt$phighinc)
   final_attitudes <- as.matrix(
     rebuilt[grep("^ukhealth[.]t1", names(rebuilt))]
   )
   recalculated <- historical_available_mean(abs(final_attitudes - .5))
-  expect_gt(sum(abs(recalculated - rebuilt$attextreme) > 1e-10), 0L)
+  expect_equal(recalculated, rebuilt$attextreme)
+  expect_equal(rebuilt$meanxtreme, ave(
+    recalculated, rebuilt$pollgroup, FUN = function(x) mean(x, na.rm = TRUE)
+  ))
+  expected_sd <- ave(seq_len(nrow(rebuilt)), rebuilt$pollgroup,
+    FUN = function(rows) {
+      mean(apply(final_attitudes[rows, ], 2, sd, na.rm = TRUE))
+    }
+  )
+  expect_equal(rebuilt$avgsd, expected_sd)
   incomplete <- rebuilt
   incomplete$educ4 <- NULL
   expect_error(compare_health_polardata(incomplete, health_reference()))
@@ -111,7 +184,7 @@ test_that("raw knowledge keys reproduce stored correctness and precision", {
 
 test_that("group gain conditions on unknown items and excludes self", {
   corrected <- rbind(c(1, 0), c(0, 0), c(1, 1))
-  expect_equal(historical_group_gain(corrected, rep(1, 3)), c(.5, .75, NA))
+  expect_equal(historical_group_gain(corrected, rep(1, 3)), c(.5, .75, 0))
   expect_error(historical_group_gain(corrected, 1:3))
   expect_error(historical_group_gain(corrected, c(1, NA, 1)))
   corrected[1, 1] <- NA_real_
@@ -120,7 +193,9 @@ test_that("group gain conditions on unknown items and excludes self", {
 
 test_that("knowledge transformations preserve missing and zero cases", {
   rebuilt <- build_health_polardata()
-  expect_identical(is.na(rebuilt$grpgain), rebuilt$t1knowcor == 1)
+  expect_false(anyNA(rebuilt$grpgain))
+  expect_equal(sum(rebuilt$t1knowcor == 1), 12L)
+  expect_true(all(rebuilt$grpgain[rebuilt$t1knowcor == 1] == 0))
   expect_true(all(rebuilt$knowgain2 >= 0))
   expect_true(all(rebuilt$t1knowcor <= rebuilt$t1know))
   expect_equal(
@@ -150,8 +225,114 @@ test_that("polardata construction needs no benchmark or vault", {
   full <- arrow::read_parquet(file.path(
     isolated, "output", "polardata", "polardata.parquet"
   ))
-  expect_identical(dim(full), c(6084L, 364L))
+  expect_identical(dim(full), c(5869L, 364L))
   expect_identical(full, arrow::read_parquet(project_path(
     "output", "polardata", "polardata.parquet"
   )))
+})
+
+test_that("Health parity rejects stale flags and new missingness", {
+  rebuilt <- build_health_polardata()
+  benchmark <- health_reference()
+  historical <- benchmark[benchmark$dpnum == 2L, ]
+  historical <- historical[match(rebuilt$caseid, historical$caseid), ]
+  for (field in c("bettered", "phighinc")) {
+    changed <- rebuilt
+    changed[[field]] <- historical[[field]]
+    expect_error(compare_health_polardata(changed, benchmark), "differs")
+    changed <- rebuilt
+    changed[[field]][which(!is.na(changed[[field]]))[1]] <- NA_real_
+    expect_error(compare_health_polardata(changed, benchmark), "differs")
+  }
+})
+
+
+test_that("UK Health severity uses the same theoretical scale at both waves", {
+  survey <- read_poll_survey("uk-health-1998")
+  responses <- expand.grid(lista = 1:5, severa = 1:5)
+  rows <- seq_len(nrow(responses))
+  for (wave in 1:2) {
+    survey[[paste0("lista", wave)]][rows] <- responses$lista
+    survey[[paste0("severa", wave)]][rows] <- responses$severa
+    survey[[paste0("lista", wave)]][26] <- -9
+  }
+  individual <- build_health_individual(survey)
+  expected <- .5 + (responses$lista - responses$severa) / 8
+  for (wave in 1:2) {
+    actual <- individual[[paste0("ukhealth.t", wave, "severi")]]
+    expect_equal(actual[rows], expected)
+    expect_true(is.na(actual[26]))
+    expect_equal(range(actual, na.rm = TRUE), c(0, 1))
+  }
+})
+
+
+test_that("shared Health dispersion uses the final attitude indices", {
+  source(project_path("R", "polardata_core.R"), local = TRUE)
+  survey <- read_poll_survey("uk-health-1998")
+  individual <- build_health_individual(survey)
+  final <- individual[grep("^ukhealth[.]t1", names(individual))]
+  profile <- core_poll_profile(survey, "uk-health-1998")
+  expect_equal(profile$attitudes, final)
+  expect_equal(ncol(profile$attitudes), 11L)
+})
+
+
+test_that("Health input indices distinguish none from all at both interviews", {
+  survey <- read_poll_survey("uk-health-1998")
+  pairs <- rbind(
+    expand.grid(first = 1:3, second = 1:3),
+    c(-9, 3), c(1, -8), c(-9, -8), c(NA, NA)
+  )
+  expected <- c(0, .25, .5, .25, .5, .75, .5, .75, 1, 1, 0, NA, NA)
+  rows <- seq_len(nrow(pairs))
+  for (wave in 1:2) {
+    for (stems in list(c("ingova", "inpuba"), c("ingpa", "indoca"))) {
+      survey[[paste0(stems[1], wave)]][rows] <- pairs[, 1]
+      survey[[paste0(stems[2], wave)]][rows] <- pairs[, 2]
+    }
+  }
+  individual <- build_health_individual(survey)
+  for (wave in 1:2) {
+    for (index in c("dispub", "avgdis")) {
+      values <- individual[[paste0("ukhealth.t", wave, index)]][rows]
+      expect_equal(values, expected)
+    }
+  }
+})
+
+
+test_that("Health input ordering agrees with independent evidence", {
+  approved <- readr::read_csv(project_path(
+    "audit", "corrections", "uk-health-1998", "folded_input_approved_values.csv"
+  ), show_col_types = FALSE)
+  rebuilt <- build_historical_poll("uk-health-1998")
+  benchmark <- health_reference()
+  benchmark <- benchmark[benchmark$dpnum == 2L, ]
+  expect_equal(nrow(rebuilt), 230L)
+  expect_false(anyDuplicated(rebuilt$caseid) > 0L)
+  for (field in unique(approved$legacy_field)) {
+    expected <- approved[approved$legacy_field == field, ]
+    rows <- match(expected$caseid, rebuilt$caseid)
+    expect_false(anyNA(rows))
+    final_expected <- expected$approved_value
+    if (field == "genvar") {
+      historical <- benchmark$genvar[
+        match(expected$caseid, benchmark$caseid)
+      ]
+      expect_equal(final_expected, approved_poll_reference_values(
+        "uk-health-1998", field, expected$caseid, historical
+      ), tolerance = 1e-10)
+      final_expected <- approved_reference_values(
+        "uk-health-1998", field, expected$caseid, historical
+      )
+      expect_equal(sum(is.na(final_expected)), 152L)
+    }
+    expect_equal(
+      rebuilt[[field]][rows], final_expected, tolerance = 1e-10
+    )
+    expect_identical(
+      is.na(expected$previous_value), is.na(expected$approved_value)
+    )
+  }
 })

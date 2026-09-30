@@ -45,9 +45,31 @@ nic_attitudes <- function(survey, wave) {
     allowed <- if (stem == "SPDRUG" && wave == 2L) c(1:3, 8, 9)
     else c(1:3, 8)
     value <- nic_source_codes(survey, paste0(stem, wave), allowed)
-    value[is.na(value) | value > 4] <- 2
+    value[value %in% c(8, 9)] <- NA_real_
     (value - 1) / 2
   }) |> tibble::as_tibble()
+}
+
+nic_age <- function(survey) {
+  year <- nic_source_codes(survey, "BYEAR", 0:99)
+  caseid <- rounded_source_code(survey$CASEID)
+  birth_year <- rounded_source_code(survey$BIRTHDY1) %% 100
+  mismatch <- which(!is.na(year) & !is.na(birth_year) &
+                      year != birth_year)
+  stopifnot(length(mismatch) == 1L, caseid[mismatch] == 10007590,
+    year[mismatch] == 7, birth_year[mismatch] == 67
+  )
+  age <- 96 - year
+  underage <- which(!is.na(age) & age < 18)
+  stopifnot(
+    setequal(caseid[underage], c(
+      10005580, 10006530, 10008740, 10008780, 10011470
+    )),
+    all(rounded_source_code(survey$BDAYRTE1)[underage] == 1)
+  )
+  age[underage] <- NA_real_
+  age[mismatch] <- 96 - birth_year[mismatch]
+  age
 }
 
 build_nic_individual <- function(survey = read_poll_survey("nic-1996")) {
@@ -57,8 +79,6 @@ build_nic_individual <- function(survey = read_poll_survey("nic-1996")) {
   baseline <- nic_attitudes(survey, 1L)
   midterm <- nic_attitudes(survey, 2L)
   post <- nic_attitudes(survey, 3L)
-  # NIC-03: the historical arrival summary retains three baseline items.
-  midterm[, 7:9] <- baseline[, 7:9]
   education <- nic_source_codes(survey, "EDLEVEL1", c(1:13, 99))
   education <- dplyr::case_when(
     education %in% 1:3 ~ 0, education %in% 4:7 ~ .33,
@@ -76,17 +96,21 @@ build_nic_individual <- function(survey = read_poll_survey("nic-1996")) {
       knowledge_midterm = rowMeans(arrival),
       knowledge_midterm_joint = rowMeans(arrival * after),
       knowledge_joint_midterm = rowMeans(before * arrival * after),
-      age = 1996 - nic_source_codes(survey, "BYEAR", 0:99),
+      age = nic_age(survey),
       female = as.numeric(nic_source_codes(survey, "SEX1", 1:2) == 2),
       minority = as.numeric(nic_source_codes(survey, "RACE1", 1:6) != 1),
       education_four = education,
       education_three = collapse_historical_education(education),
-      higher_education = as.numeric(education >= .66),
-      household_income = NA_real_, high_income = NA_real_,
+
+      household_income = NA_real_,
       political_interest_t1 = (interest - 1) / 3,
       read_briefing = c(0, .33, .33, .66, 1)[briefing],
-      attitude_extremity = rowMeans(abs(as.matrix(baseline) - .5)),
-      attitude_extremity_midterm = rowMeans(abs(as.matrix(midterm) - .5))
+      attitude_extremity = historical_available_mean(
+        abs(as.matrix(baseline) - .5)
+      ),
+      attitude_extremity_midterm = historical_available_mean(
+        abs(as.matrix(midterm) - .5)
+      )
     )
   )
 }

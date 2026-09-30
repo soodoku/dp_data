@@ -280,14 +280,14 @@ btp-health-education-2005,q16post,2,NA,0,answered,NA,64
 btp-health-education-2005,q16post,3,NA,0,answered,NA,194
 btp-health-education-2005,q16post,7,NA,NA,non_substantive,7,58
 btp-health-education-2005,q16post,NA,NA,NA,source_missing,system,2
-btp-health-education-2005,q17,1,NA,1,answered,NA,151
+btp-health-education-2005,q17,1,NA,0,answered,NA,151
 btp-health-education-2005,q17,2,NA,0,answered,NA,145
-btp-health-education-2005,q17,3,NA,0,answered,NA,90
+btp-health-education-2005,q17,3,NA,1,answered,NA,90
 btp-health-education-2005,q17,7,NA,NA,non_substantive,7,66
 btp-health-education-2005,q17,NA,NA,NA,source_missing,system,2
-btp-health-education-2005,q17post,1,NA,1,answered,NA,138
+btp-health-education-2005,q17post,1,NA,0,answered,NA,138
 btp-health-education-2005,q17post,2,NA,0,answered,NA,121
-btp-health-education-2005,q17post,3,NA,0,answered,NA,142
+btp-health-education-2005,q17post,3,NA,1,answered,NA,142
 btp-health-education-2005,q17post,7,NA,NA,non_substantive,7,50
 btp-health-education-2005,q17post,NA,NA,NA,source_missing,system,3
 btp-health-education-2005,q26,1,NA,0,answered,NA,1
@@ -1881,7 +1881,7 @@ vermont-energy-2007,Q031T3,5,NA,0,answered,NA,3
 vermont-energy-2007,Q031T3,88,NA,NA,non_substantive,88,2
 vermont-energy-2007,Q031T3,99,NA,NA,non_substantive,99,19
 vermont-energy-2007,Q032T3,1,NA,0,answered,NA,32
-vermont-energy-2007,Q032T3,2,NA,1,answered,NA,48
+vermont-energy-2007,Q032T3,2,NA,0,answered,NA,48
 vermont-energy-2007,Q032T3,3,NA,1,answered,NA,41
 vermont-energy-2007,Q032T3,4,NA,0,answered,NA,15
 vermont-energy-2007,Q032T3,88,NA,NA,non_substantive,88,1
@@ -1930,7 +1930,7 @@ vermont-energy-2007,Q78,5,NA,0,answered,NA,3
 vermont-energy-2007,Q78,8,NA,NA,non_substantive,8,82
 vermont-energy-2007,Q78,9,NA,NA,non_substantive,9,3
 vermont-energy-2007,Q79,1,NA,0,answered,NA,36
-vermont-energy-2007,Q79,2,NA,1,answered,NA,26
+vermont-energy-2007,Q79,2,NA,0,answered,NA,26
 vermont-energy-2007,Q79,3,NA,1,answered,NA,16
 vermont-energy-2007,Q79,4,NA,0,answered,NA,6
 vermont-energy-2007,Q79,8,NA,NA,non_substantive,8,51

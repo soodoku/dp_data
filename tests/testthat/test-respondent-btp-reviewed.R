@@ -1,6 +1,7 @@
 source(file.path(root, "R", "respondents.R"))
 source(file.path(root, "R", "respondent_btp_general.R"))
 source(file.path(root, "R", "respondent_btp_health.R"))
+source(file.path(root, "R", "respondent_parity.R"))
 source(file.path(root, "R", "respondent_san_mateo.R"))
 
 test_that("BTP election rejects absent and ambiguous joins", {
@@ -27,8 +28,8 @@ test_that("BTP election rejects absent and ambiguous joins", {
   expect_error(augment_btp_general_source(survey, rbind(raw, raw[1, ])))
   augmented <- augment_btp_general_source(survey, raw)
   fields <- c(
-    "source_row", "caseid_original", "ppeducat", "ppincimp", "ppage",
-    "ppgender", "ppeth", grep("^raw_", names(augmented), value = TRUE),
+    "source_row", "caseid_original", "w4comsta", "ppeducat", "ppincimp",
+    "ppage", "ppgender", "ppeth", grep("^raw_", names(augmented), value = TRUE),
     paste0(
       rep(c("w4b", "w4f"), each = 9),
       rep(c(60, 61, 62, 63, 64, 65, 66, 68, 69), 2)
@@ -40,6 +41,105 @@ test_that("BTP election rejects absent and ambiguous joins", {
     build_btp_general_individual(augmented),
     "Unreviewed source codes"
   )
+})
+
+test_that("BTP election distinguishes absent waves from wrong answers", {
+  survey <- read_poll_survey("btp-general-election-2004")
+  values <- build_btp_general_individual(survey)
+  before_absent <- survey$w4comsta == 3
+  after_absent <- survey$w4comsta == 2
+  expect_equal(sum(before_absent), 13L)
+  expect_equal(sum(after_absent), 33L)
+  expect_true(all(is.na(btp_general_knowledge(survey, "b")[before_absent, ])))
+  expect_true(all(is.na(btp_general_knowledge(survey, "f")[after_absent, ])))
+  expect_identical(is.na(values$knowledge_t1), before_absent)
+  expect_identical(is.na(values$knowledge_t2), after_absent)
+  for (field in c(
+    "knowledge_joint", "knowledge_gain", "knowledge_gain_joint",
+    "log_knowledge_joint", "high_knowledge_joint"
+  )) {
+    expect_true(all(is.na(values[[field]][before_absent | after_absent])),
+      info = field
+    )
+  }
+  observed <- which(survey$w4comsta == 1)[1]
+  missing_item <- survey[observed, ]
+  missing_item$w4b60 <- NA_real_
+  expect_equal(unname(btp_general_knowledge(missing_item, "b")[1, "60"]), 0)
+  missing_item$w4comsta <- 4
+  expect_error(btp_general_knowledge(missing_item, "b"),
+    "Unreviewed source codes in w4comsta"
+  )
+  without_status <- survey[, names(survey) != "w4comsta"]
+  expect_error(btp_general_knowledge(without_status, "b"),
+    "Missing source field: w4comsta"
+  )
+  raw <- haven::read_dta(project_path(
+    "data", "btp-general-election-2004", "raw-responses.dta"
+  ))
+  expect_true(all(is.na(btp_general_knowledge(raw, "b")[
+    is.na(raw$w4comsta),
+  ])))
+  absent <- missing_item
+  absent$w4comsta <- -3
+  expect_error(btp_general_knowledge(absent, "b"),
+    "completion status contradicts observed wave responses"
+  )
+  absent[grep("^w4b[0-9]", names(absent), value = TRUE)] <- NA_real_
+  expect_true(all(is.na(btp_general_knowledge(absent, "b"))))
+  for (code in c(-4, -3)) {
+    absent$w4comsta <- code
+    absent[grep("^w4[bf][0-9]", names(absent), value = TRUE)] <- code
+    expect_true(all(is.na(btp_general_knowledge(absent, "b"))))
+    expect_true(all(is.na(btp_general_knowledge(absent, "f"))))
+  }
+  for (code in c(-2, -1)) {
+    absent$w4b60 <- code
+    expect_error(btp_general_knowledge(absent, "b"),
+      "completion status contradicts observed wave responses"
+    )
+  }
+})
+
+test_that("BTPGE-05 includes observed zero-correct post respondents", {
+  survey <- read_poll_survey("btp-general-election-2004")
+  contracts <- read_metadata("respondent_sources")
+  contract <- contracts[contracts$poll_id == "btp-general-election-2004", ]
+  built <- build_poll_respondents(contract)
+  sample <- built$sample_memberships
+  sample <- sample[sample$sample_id == "historical-polardata", ]
+  expect_equal(sum(sample$included), 248L)
+  approved <- btp_ge_approved_inclusions()
+  expect_setequal(approved$respondent_id, c(552, 585))
+  rows <- match(approved$respondent_id, survey$caseid_original)
+  expect_equal(survey$source_row[rows], approved$source_row)
+  expect_equal(as.numeric(survey$dop4part[rows]), c(1, 1))
+  post_items <- paste0("w4f", c(60, 61, 62, 63, 64, 65, 66, 68, 69))
+  expect_equal(rowSums(!is.na(survey[rows, post_items])), c(9, 9))
+  expect_equal(sum(rowSums(!is.na(survey[post_items])) == 0L), 33L)
+  values <- build_btp_general_individual(survey)
+  expect_equal(values$knowledge_t2[rows], c(0, 0))
+  expect_false(anyNA(values$attitude_extremity[rows]))
+  expect_true(all(sample$included[
+    match(as.character(approved$respondent_id), sample$respondent_id)
+  ]))
+})
+
+test_that("Health achievement-gap knowledge keys decreasing in both waves", {
+  fields <- paste0("q", c(15, 16, 17, 26, 27, 28))
+  survey <- tibble::as_tibble(stats::setNames(
+    rep(list(rep(7, 5)), 12), c(fields, paste0(fields, "post"))
+  ))
+  survey$q17 <- c(1, 2, 3, 7, NA_real_)
+  survey$q17post <- c(3, 2, 1, 7, NA_real_)
+  before <- btp_health_knowledge(survey, 1L)
+  after <- btp_health_knowledge(survey, 2L)
+  expect_equal(unname(before[, "q17"]), c(0, 0, 1, 0, 0))
+  expect_equal(unname(after[, "q17"]), c(1, 0, 0, 0, 0))
+  scores <- btp_float_knowledge(before, after)
+  expect_equal(scores$knowledge_t1, as_historical_float(c(0, 0, 1 / 6, 0, 0)))
+  expect_equal(scores$knowledge_t2, as_historical_float(c(1 / 6, 0, 0, 0, 0)))
+  expect_equal(scores$knowledge_joint, rep(0, 5))
 })
 
 test_that("Health uses raw responses independently of row order", {
@@ -128,8 +228,8 @@ test_that("Reviewed US polls reproduce historical values and missingness", {
     knowgain2 = "knowledge_gain_joint", logpk = "log_knowledge_joint",
     tobitpk = "high_knowledge_joint", ppage = "age", female = "female",
     minority = "minority", educ4 = "education_four", educ3 = "education_three",
-    bettered = "higher_education", hhincome = "household_income",
-    highinc = "high_income", attextreme = "attitude_extremity",
+    hhincome = "household_income",
+    attextreme = "attitude_extremity",
     readbrief = "read_briefing"
   )
   for (case in cases) {
@@ -141,6 +241,15 @@ test_that("Reviewed US polls reproduce historical values and missingness", {
       "san-mateo-2008" = as.numeric(san_mateo_historical_ids(survey, survey))
     )
     expected <- benchmark[benchmark$dpnum == case$number, ]
+    if (case$poll %in% c(
+      "btp-health-education-2005", "btp-general-election-2004"
+    )) {
+      for (field in names(mapping)) {
+        expected[[field]] <- approved_reference_values(
+          case$poll, field, expected$caseid, expected[[field]]
+        )
+      }
+    }
     index <- match(expected$caseid, ids)
     expect_false(anyNA(index))
     for (field in names(mapping)) {

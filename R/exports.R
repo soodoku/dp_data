@@ -4,7 +4,8 @@ export_schema <- function(table_name) {
   stopifnot(nrow(columns) > 0L)
   types <- list(
     string = arrow::utf8(), int32 = arrow::int32(),
-    float64 = arrow::float64(), bool = arrow::boolean()
+    float64 = arrow::float64(), bool = arrow::boolean(),
+    date32 = arrow::date32()
   )
   fields <- purrr::pmap(
     columns[c("column", "arrow_type", "nullable")],
@@ -15,7 +16,8 @@ export_schema <- function(table_name) {
   do.call(arrow::schema, fields)
 }
 
-write_typed_export <- function(data, table_name, directory) {
+write_typed_export <- function(data, table_name, directory,
+                               schema_version = "1") {
   columns <- read_metadata("canonical_columns") |>
     dplyr::filter(.data$table == table_name)
   stopifnot(setequal(names(data), columns$column))
@@ -34,6 +36,6 @@ write_typed_export <- function(data, table_name, directory) {
     table = table_name, path = fs::path_rel(path, project_path()),
     rows = nrow(data), columns = ncol(data),
     sha256 = checksum,
-    schema_version = "1"
+    schema_version = schema_version
   )
 }

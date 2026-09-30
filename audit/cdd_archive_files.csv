@@ -178,7 +178,7 @@ data/Bulgaria/Indices/Bulgaria Indices V7.doc,121856,40e07de7880227e2772216cbcf2
 data/Bulgaria/Indices/Bulgaria Indices.doc,106496,c692f9fa3d4b8048dea4f29f3220d6c037a4b22e424bceff023885f59b342346,doc,1,review_required,vault_only,vault/cdd/data/Bulgaria/Indices/Bulgaria Indices.doc
 data/Bulgaria/Indices/Bulgaria_Knowledge Indices.doc,35328,562147c29a8e69fa4bca2afa770d8b3578dff8322322e195bb426ad92f8b237c,doc,1,review_required,vault_only,data/bulgaria-crime-2002/knowledge-index.doc
 data/Bulgaria/Master Data/After_discussion_eng.sav,69084,1ae3bed4295dc70bea9699b4a81bcb3932d41647e97d22b6662ddf24b286ab4b,sav,3,review_required,vault_only,vault/cdd/data/Bulgaria/data/bu.after.sav
-data/Bulgaria/Master Data/Before_discussion_eng.sav,61768,eae7b78c90442da7d68c4279d421a05f8dfaa0710fedfa5bdba7c11a3984087b,sav,3,review_required,vault_only,vault/cdd/data/Bulgaria/data/bu.before.sav
+data/Bulgaria/Master Data/Before_discussion_eng.sav,61768,eae7b78c90442da7d68c4279d421a05f8dfaa0710fedfa5bdba7c11a3984087b,sav,3,review_required,vault_only,data/bulgaria-crime-2002/attendee-baseline.sav
 data/Bulgaria/Master Data/DelPoll_control_eng.sav,133284,2a4bdf5c748f306a05774f6ef3fdd72d518f228705d9629daf28939c2f1ebfda,sav,3,review_required,vault_only,vault/cdd/data/Bulgaria/data/bu.control.sav
 data/Bulgaria/Master Data/DelPoll_eng.sav,170711,b2a1febb79ccc374773d1ea6d286104881a3b8ca999df3cbe90fc0a0d01b3682,sav,1,review_required,vault_only,vault/cdd/data/Bulgaria/Master Data/DelPoll_eng.sav
 data/Bulgaria/Master Data/WS_FTP.LOG,4534,9ae445210bfe044c72e082316c326d4ddb8896b2813945bdc1a91ae498dd3103,log,1,review_required,vault_only,vault/cdd/data/Bulgaria/Master Data/WS_FTP.LOG
@@ -192,14 +192,14 @@ data/Bulgaria/codebook/2003-bulgaria-crime.pdf,297461,d8dadcfc67f4c83fc5fb895d69
 data/Bulgaria/codebook/Bulgaria.doc,372736,7101f933cee01690014e04ca25b113c2336b2e1f0a317ad5d7d147ebcbf8d5ec,doc,1,review_required,vault_only,data/bulgaria-crime-2002/questionnaire.doc
 data/Bulgaria/codebook/WS_FTP.LOG,260,bfc440bce739650bc6801c512116f27b9d6e795b3bc739490d807fae7e302bdb,log,1,review_required,vault_only,vault/cdd/data/Bulgaria/codebook/WS_FTP.LOG
 data/Bulgaria/data/After_discussion_eng.sav,69084,1ae3bed4295dc70bea9699b4a81bcb3932d41647e97d22b6662ddf24b286ab4b,sav,3,review_required,vault_only,vault/cdd/data/Bulgaria/data/bu.after.sav
-data/Bulgaria/data/Before_discussion_eng.sav,61768,eae7b78c90442da7d68c4279d421a05f8dfaa0710fedfa5bdba7c11a3984087b,sav,3,review_required,vault_only,vault/cdd/data/Bulgaria/data/bu.before.sav
+data/Bulgaria/data/Before_discussion_eng.sav,61768,eae7b78c90442da7d68c4279d421a05f8dfaa0710fedfa5bdba7c11a3984087b,sav,3,review_required,vault_only,data/bulgaria-crime-2002/attendee-baseline.sav
 data/Bulgaria/data/DelPoll_control_eng.sav,133284,2a4bdf5c748f306a05774f6ef3fdd72d518f228705d9629daf28939c2f1ebfda,sav,3,review_required,vault_only,vault/cdd/data/Bulgaria/data/bu.control.sav
-data/Bulgaria/data/DelPoll_eng.sav,167544,f4731a9981b7bb74f022ede943e9aa3459312cd649eaad265dc6f5804cbd482b,sav,1,review_required,vault_only,vault/cdd/data/Bulgaria/data/DelPoll_eng.sav
+data/Bulgaria/data/DelPoll_eng.sav,167544,f4731a9981b7bb74f022ede943e9aa3459312cd649eaad265dc6f5804cbd482b,sav,1,review_required,vault_only,data/bulgaria-crime-2002/recruitment.sav
 data/Bulgaria/data/WS_FTP.LOG,4847,3d1f8cff522f87737bd3c0a41938b88d2d3fe6da098f02249c96af9b98010ac7,log,1,review_required,vault_only,vault/cdd/data/Bulgaria/data/WS_FTP.LOG
 data/Bulgaria/data/after_discussion_eng.dta,95031,fcee40c54eeff05964c1e86fc42973383d71dceba54606564bd0ad6bb538aad1,dta,2,review_required,vault_only,vault/cdd/data/Bulgaria/data/after_discussion_eng.dta
 data/Bulgaria/data/before_discussion_eng.dta,84755,8baa5cff1b17fefbb51b9a60fd5337de8d53383fb9004248794c8b00ca8da903,dta,2,review_required,vault_only,vault/cdd/data/Bulgaria/data/before_discussion_eng.dta
 data/Bulgaria/data/bu.after.sav,69084,1ae3bed4295dc70bea9699b4a81bcb3932d41647e97d22b6662ddf24b286ab4b,sav,3,review_required,vault_only,vault/cdd/data/Bulgaria/data/bu.after.sav
-data/Bulgaria/data/bu.before.sav,61768,eae7b78c90442da7d68c4279d421a05f8dfaa0710fedfa5bdba7c11a3984087b,sav,3,review_required,vault_only,vault/cdd/data/Bulgaria/data/bu.before.sav
+data/Bulgaria/data/bu.before.sav,61768,eae7b78c90442da7d68c4279d421a05f8dfaa0710fedfa5bdba7c11a3984087b,sav,3,review_required,vault_only,data/bulgaria-crime-2002/attendee-baseline.sav
 data/Bulgaria/data/bu.control.sav,133284,2a4bdf5c748f306a05774f6ef3fdd72d518f228705d9629daf28939c2f1ebfda,sav,3,review_required,vault_only,vault/cdd/data/Bulgaria/data/bu.control.sav
 data/Bulgaria/data/bu.part.rdata,178039,f76aaf7fa64d3f6ff67f5868b48ba7467fd062643ac463f03161e15e16fe4d37,rdata,1,review_required,vault_only,vault/cdd/data/Bulgaria/data/bu.part.rdata
 data/Bulgaria/data/bulgaria.eval.rdata,137007,859af4a1c676feced3306f655944126ca159f622739b98abf46bb782f95e864c,rdata,1,review_required,vault_only,vault/cdd/data/Bulgaria/data/bulgaria.eval.rdata
@@ -274,7 +274,7 @@ data/Denmark/data/t0 english.xls,2518979,b55702e9f32c302c7fb3f1435f4d91bc04715ed
 data/Denmark/data/t0.sav,365388,17ca3bf6755cebc193c6a19347f8eb2db7087f04da54eae816d4d3777beb986d,sav,1,review_required,vault_only,vault/cdd/data/Denmark/data/t0.sav
 data/Denmark/data/t0denmark.rdata,734383,030ad33cda5e44ccda501dc56f45d4f673ba1fae358e1b21f744cbdf565fbc9b,rdata,1,review_required,vault_only,vault/cdd/data/Denmark/data/t0denmark.rdata
 data/Denmark/data/t0english.sav,368589,ec3821431a519ef2fcfc89533a4887afc3bfafb82801146b6032cb8de6ea51a8,sav,1,review_required,vault_only,vault/cdd/data/Denmark/data/t0english.sav
-data/Denmark/data/t1.sav,121960,0bf7c28c4bc93c80e62244ec02b3764ba15e735684d4cebefc7eace2b67deeb9,sav,1,review_required,vault_only,vault/cdd/data/Denmark/data/t1.sav
+data/Denmark/data/t1.sav,121960,0bf7c28c4bc93c80e62244ec02b3764ba15e735684d4cebefc7eace2b67deeb9,sav,1,approved-public,published,data/denmark-euro-2000/arrival.sav
 data/Denmark/data/t1denmark.rdata,612179,ece06592d9bf614251f333e52330c8a0518f8a62452282267dd9c6cbe77929b5,rdata,1,review_required,vault_only,vault/cdd/data/Denmark/data/t1denmark.rdata
 data/Denmark/data/t2.sav,157320,9046fedd5abebedfc91107db35de8b6de04b4d4486c212879394182b51215771,sav,1,review_required,vault_only,vault/cdd/data/Denmark/data/t2.sav
 data/Denmark/data/t2ctrl.rdata,450304,3ffa182dcff50bbe457d8409f1c6a9a33aed28f61e7691f2f6a19e9b5b7df10f,rdata,1,review_required,vault_only,vault/cdd/data/Denmark/data/t2ctrl.rdata
@@ -306,7 +306,7 @@ data/Greece/Greece Knowledge Index Factor Analyses.doc,60416,fa4f18052318840f1bf
 "data/Greece/Greece MNL DV_T3VoteIntention, EV_T2TRatings.doc",27136,ea3df0e707a6ca6ac8d8cd30d44d1020b514df3f0f703341832354e2ad0e86e3,doc,1,review_required,vault_only,"vault/cdd/data/Greece/Greece MNL DV_T3VoteIntention, EV_T2TRatings.doc"
 data/Greece/QUESTIONNAIRE_ENGLISH.19ma06.doc,78336,392081e5c3a5f82be861ad5402dfe80a91f1e951d8a14819dcb0cfe6190e7e3d,doc,3,review_required,vault_only,vault/cdd/data/Greece/QUESTIONNAIRE_ENGLISH.19ma06.doc
 data/Greece/candidate-selection.pdf,148659,6391eca03e2740236397d56984ba588f6adf5114ce7fc5d79c10378d7a1fc9dc,pdf,1,review_required,vault_only,vault/cdd/data/Greece/candidate-selection.pdf
-data/Greece/data/Greece_data_all_final.sav,1996092,cc79623a9432a5d4d0bc9b8c3ff1ea3eebaa5021799c80631048f261ca9a651f,sav,1,review_required,vault_only,vault/cdd/data/Greece/data/Greece_data_all_final.sav
+data/Greece/data/Greece_data_all_final.sav,1996092,cc79623a9432a5d4d0bc9b8c3ff1ea3eebaa5021799c80631048f261ca9a651f,sav,1,approved-public,published,data/marousi-2006/survey.sav
 data/Greece/data/QUESTIONNAIRE_ENGLISH.19ma06.doc,78336,392081e5c3a5f82be861ad5402dfe80a91f1e951d8a14819dcb0cfe6190e7e3d,doc,3,review_required,vault_only,vault/cdd/data/Greece/QUESTIONNAIRE_ENGLISH.19ma06.doc
 data/Greece/data/data_all_final.dta,503925,c30a24a762a1362541652bf83b626fdd73b2cdd412d80d786e187e3d754eecbf,dta,1,review_required,vault_only,vault/cdd/data/Greece/data/data_all_final.dta
 data/Greece/data/data_all_final.sav,505929,a55261bc6e7a6d896f2f57524f35a055f9b55ac3575dfbd099e100fd6458c373,sav,1,review_required,vault_only,vault/cdd/data/Greece/data/data_all_final.sav
@@ -562,15 +562,15 @@ data/Utilities/swepco/make_data/WS_FTP.LOG,2261,6d183522add9ebf78912817f8eb28fbc
 data/Utilities/swepco/make_data/files.txt,671,083e4cc6a085e549694d45c113cdfc4de018da052d1af855243b944cc0b3073d,txt,1,review_required,vault_only,vault/cdd/data/Utilities/swepco/make_data/files.txt
 data/Utilities/swepco/make_data/missingvalues.log,11347,886d217894abdb63fc04d30403a0280e33492d4b0c81a1003e21b94444745e1a,log,1,review_required,vault_only,vault/cdd/data/Utilities/swepco/make_data/missingvalues.log
 data/Utilities/swepco/make_data/missingvalues.lst,295098,e5f661c5525622f2a5ce4dd7c37520ab4c9aa99e39b1dff7efec3b72ccf8e9c3,lst,1,review_required,vault_only,vault/cdd/data/Utilities/swepco/make_data/missingvalues.lst
-data/Utilities/swepco/make_data/missingvalues.sas,1750,c230740449bff11f247d3182d50cce6117fa8b9ab0f6665d1a1471e2a4aff44f,sas,1,review_required,vault_only,vault/cdd/data/Utilities/swepco/make_data/missingvalues.sas
+data/Utilities/swepco/make_data/missingvalues.sas,1750,c230740449bff11f247d3182d50cce6117fa8b9ab0f6665d1a1471e2a4aff44f,sas,1,approved-public,published,data/swepco-1996/scripts/original-missing-values.sas
 data/Utilities/swepco/make_data/swepco.log,42640,665f7067a3f61eb24fa3550347c563ea004a9bfa9b4c63814e93a33dc9c62a6b,log,1,review_required,vault_only,vault/cdd/data/Utilities/swepco/make_data/swepco.log
 data/Utilities/swepco/make_data/swepco.lst,316256,e68847305e03c292119f8b23356438067e15d8b74dd71542c173851e88ef4d31,lst,1,review_required,vault_only,vault/cdd/data/Utilities/swepco/make_data/swepco.lst
-data/Utilities/swepco/make_data/swepco.sas,21741,da0bbf31a2b3b4c960ad90009927c08f327409c65a22c6452897f9aa9fdeebcf,sas,1,review_required,vault_only,vault/cdd/data/Utilities/swepco/make_data/swepco.sas
+data/Utilities/swepco/make_data/swepco.sas,21741,da0bbf31a2b3b4c960ad90009927c08f327409c65a22c6452897f9aa9fdeebcf,sas,1,approved-public,published,data/swepco-1996/scripts/original-survey-construction.sas
 data/Utilities/swepco/swepco.code,172367,5ce5486be80e8cb2ee281181b42b66b17e573eb988161b18b7be7e3c531f8c05,code,2,review_required,vault_only,data/swepco-1996/codebook.txt
 data/Utilities/swepco/swepco_data/.Rhistory,1192,978889aae1cc0ae745d4b5e48d6f94d7b3e2df8d3106e1c8770506aa553d5105,,1,review_required,vault_only,vault/cdd/data/Utilities/swepco/swepco_data/.Rhistory
 data/Utilities/swepco/swepco_data/WS_FTP.LOG,1955,68b6391f8d3daeed9d54478828959a85e284622700ebbeac3a2fced0c1d31340,log,1,review_required,vault_only,vault/cdd/data/Utilities/swepco/swepco_data/WS_FTP.LOG
 data/Utilities/swepco/swepco_data/files.txt,797,068637168e4422fac198b4201f1340df8fd511da15ba5efb213fe0ebe05ebca3,txt,1,review_required,vault_only,vault/cdd/data/Utilities/swepco/swepco_data/files.txt
-data/Utilities/swepco/swepco_data/swepco.por,652062,728cbb5976bb64022a60008041db37d28f171f878b453207562626c29e4161d6,por,1,review_required,vault_only,vault/cdd/data/Utilities/swepco/swepco_data/swepco.por
+data/Utilities/swepco/swepco_data/swepco.por,652062,728cbb5976bb64022a60008041db37d28f171f878b453207562626c29e4161d6,por,1,approved-public,published,data/swepco-1996/source-materials/survey-original.por
 data/Utilities/swepco/swepco_data/swepco.ssd01,2433024,0db21f61e7478aebc0d71466aca2e29bfe8eb85ad2521550fd4ec20a20656034,ssd01,1,review_required,vault_only,vault/cdd/data/Utilities/swepco/swepco_data/swepco.ssd01
 data/Utilities/swepco/swepco_data/swepco2.dta,348160,d308f57bc58e3f2bc7b2446588c85c86060341a7ddd5b86634aa9743484a4c6e,dta,1,review_required,vault_only,data/swepco-1996/survey.dta
 data/Utilities/swepco/swepco_data/swepco2.por,638860,24f76c8bafc3b8122da56a7fa45bc260378c092128594e80a2b594b7f305afe0,por,1,review_required,vault_only,vault/cdd/data/Utilities/swepco/swepco_data/swepco2.por
@@ -618,14 +618,14 @@ data/Utilities/wt/make_data/WS_FTP.LOG,2336,377d51c2a2ff6ae32056fcf523a66f31a7b7
 data/Utilities/wt/make_data/files.txt,650,9b4b01bc2c5dbbd0ec45a2716cc82afa55614e20be312b997a26b4ba540ff166,txt,1,review_required,vault_only,vault/cdd/data/Utilities/wt/make_data/files.txt
 data/Utilities/wt/make_data/missingvalues.log,11673,6d540000dbeb3be30d9fde455dde5319e65a5cf2f97dd687d5dbb2260882e8ec,log,1,review_required,vault_only,vault/cdd/data/Utilities/wt/make_data/missingvalues.log
 data/Utilities/wt/make_data/missingvalues.lst,269853,60c9e6008f0a70177a6c1800be94fdbdc13fdc28bb747ee19c712b6916424d6c,lst,1,review_required,vault_only,vault/cdd/data/Utilities/wt/make_data/missingvalues.lst
-data/Utilities/wt/make_data/missingvalues.sas,1934,5b9252c888ba4cde5cd4d52638e7051953c03917ff09c55371dbef19349fc3e1,sas,1,review_required,vault_only,vault/cdd/data/Utilities/wt/make_data/missingvalues.sas
+data/Utilities/wt/make_data/missingvalues.sas,1934,5b9252c888ba4cde5cd4d52638e7051953c03917ff09c55371dbef19349fc3e1,sas,1,approved-public,published,data/wtu-1996/scripts/original-missing-values.sas
 data/Utilities/wt/make_data/wt.log,42830,5c28729be6bcfe5206cfa4f219da876720f630c3ae77d2f3bca223ebbc8b7ce7,log,1,review_required,vault_only,vault/cdd/data/Utilities/wt/make_data/wt.log
 data/Utilities/wt/make_data/wt.lst,289667,b663c9de228e8dcd1b4a8656a04e30d43aee3f13e16e53003aea360fbc95949f,lst,1,review_required,vault_only,vault/cdd/data/Utilities/wt/make_data/wt.lst
-data/Utilities/wt/make_data/wt.sas,22825,1f6fff1bc35ff4c420131176eef9231256ff8e029aa07e67dfb52265265d25d0,sas,1,review_required,vault_only,vault/cdd/data/Utilities/wt/make_data/wt.sas
+data/Utilities/wt/make_data/wt.sas,22825,1f6fff1bc35ff4c420131176eef9231256ff8e029aa07e67dfb52265265d25d0,sas,1,approved-public,published,data/wtu-1996/scripts/original-survey-construction.sas
 data/Utilities/wt/wt_data/.Rhistory,19376,2608bbcdb3907c30f254367c0fd37f8ed1eba9c2a3b9d779c38f5cc4a075d809,,1,review_required,vault_only,vault/cdd/data/Utilities/wt/wt_data/.Rhistory
 data/Utilities/wt/wt_data/WS_FTP.LOG,2080,5133bc96da4d366e65449902167f8596f3fac19000239ab2d92959ad3e2030bb,log,1,review_required,vault_only,vault/cdd/data/Utilities/wt/wt_data/WS_FTP.LOG
 data/Utilities/wt/wt_data/files.txt,790,7d2e5d3065479fd8d6beaa360c653ab9e8980efe5068d9f02feb7e35a6ad7e25,txt,1,review_required,vault_only,vault/cdd/data/Utilities/wt/wt_data/files.txt
-data/Utilities/wt/wt_data/wt.por,545626,5fd9f3b1b01eff7abbf4d9c7271959b8188e55360d5997e6527ad3019c4dd082,por,1,review_required,vault_only,vault/cdd/data/Utilities/wt/wt_data/wt.por
+data/Utilities/wt/wt_data/wt.por,545626,5fd9f3b1b01eff7abbf4d9c7271959b8188e55360d5997e6527ad3019c4dd082,por,1,approved-public,published,data/wtu-1996/source-materials/survey-original.por
 data/Utilities/wt/wt_data/wt.ssd01,2039808,8f215bb8fc821cfc32215c665046f65e5319e10c0c236aecb62a7b93efa22384,ssd01,1,review_required,vault_only,vault/cdd/data/Utilities/wt/wt_data/wt.ssd01
 data/Utilities/wt/wt_data/wt2.dta,293858,ecc9949d86ab2f51133eeb7f8b0749ab6913fedb9d82b2cbe247e021f40d4b88,dta,1,review_required,vault_only,data/wtu-1996/survey.dta
 data/Utilities/wt/wt_data/wt2.por,534064,44ef3e3af149bb16d8dde864bf75f41eaf2985cc7ad46daf6a6d4db245d14492,por,1,review_required,vault_only,vault/cdd/data/Utilities/wt/wt_data/wt2.por
@@ -1205,7 +1205,7 @@ data/eu_2009/questionnaires/T3 Questionnaires/T3 Questionnaire_SV 1.doc,827904,b
 data/eu_2009/questionnaires/T3 Questionnaires/T3 Questionnaire_SV.doc,813056,36679290ea27a376d0e83f57ff80bfa9e1252cb57aff2b09c2d879461acf36a2,doc,1,review_required,vault_only,vault/cdd/data/eu_2009/questionnaires/T3 Questionnaires/T3 Questionnaire_SV.doc
 data/eu_2009/questionnaires/T3 Questionnaires/T3 questionnaire - NL.doc,772096,d86d4c9b06f8aa65b4ce51caf297ca573cf893d68aaf709e25130d92409d0ac3,doc,1,review_required,vault_only,vault/cdd/data/eu_2009/questionnaires/T3 Questionnaires/T3 questionnaire - NL.doc
 data/eu_2009/questionnaires/T3 Questionnaires/T3 questionnaire_BG.doc,835072,a59309e8cc6427d525518630551e67b6cb55886c15bf2511371f88c45088cb83,doc,1,review_required,vault_only,vault/cdd/data/eu_2009/questionnaires/T3 Questionnaires/T3 questionnaire_BG.doc
-data/eu_2009/questionnaires/T3 Questionnaires/T3 questionnaire_EN.doc,835584,66486d9ce06dc2568654ae654582d010d8afd454c0afe0162905d922b1172bbc,doc,1,review_required,vault_only,data/europolis-2009/questionnaire-post.doc
+data/eu_2009/questionnaires/T3 Questionnaires/T3 questionnaire_EN.doc,835584,66486d9ce06dc2568654ae654582d010d8afd454c0afe0162905d922b1172bbc,doc,1,review_required,removed-content-duplicate,
 data/eu_2009/questionnaires/T3 Questionnaires/T3 questionnaire_ES.doc,757248,91600e28871deebf990426c49bce2a986a891058767ca862184375d4b40f4511,doc,1,review_required,vault_only,vault/cdd/data/eu_2009/questionnaires/T3 Questionnaires/T3 questionnaire_ES.doc
 data/eu_2009/questionnaires/T3 Questionnaires/T3 questionnaire_HU.doc,822272,d8fcb222120e4f5dc9a612774d6436ee634297f39bcd19e30f78e67ca2d9764b,doc,1,review_required,vault_only,vault/cdd/data/eu_2009/questionnaires/T3 Questionnaires/T3 questionnaire_HU.doc
 data/eu_2009/questionnaires/T3 Questionnaires/T3 questionnaire_IT.doc,786944,3c75132c26a1f6af53dc368a2014b69f3c36b153473e3ede358e02fb6d587c48,doc,1,review_required,vault_only,vault/cdd/data/eu_2009/questionnaires/T3 Questionnaires/T3 questionnaire_IT.doc
@@ -1606,7 +1606,7 @@ data/us_2004_general_election/QUESTIONNAIRE/Wave 4.doc,520192,96b7b8f1bddf44b52b
 data/us_2004_general_election/QUESTIONNAIRE/Wave 4_USEFUL_ITEMS.doc,264192,38c3a892a06bddee40df622b86d0430b77ca26e2f1b5b26ba11b0895909b726a,doc,1,review_required,vault_only,vault/cdd/data/us_2004_general_election/QUESTIONNAIRE/Wave 4_USEFUL_ITEMS.doc
 data/us_fp_online/codebook/DOP 2 Codebook.doc,516608,57be2564c94b5b261523792d6686b2738f92dadc252491daebf4c77e42d5f222,doc,1,review_required,vault_only,vault/cdd/data/us_fp_online/codebook/DOP 2 Codebook.doc
 data/us_fp_online/codebook/WS_FTP.LOG,717,1e0d89b703d0cc33bcec096cb3497f0d98681f3caadc19a2417cdc780b05dbdf,log,1,review_required,vault_only,vault/cdd/data/us_fp_online/codebook/WS_FTP.LOG
-data/us_fp_online/master_data/Both_Waves_Final_Client.sav,280448,bef0b22dd3912dd680a54418aa1f7c7615376b5a4a124e2ac6a0e0bab531ebb6,sav,1,review_required,vault_only,vault/cdd/data/us_fp_online/master_data/Both_Waves_Final_Client.sav
+data/us_fp_online/master_data/Both_Waves_Final_Client.sav,280448,bef0b22dd3912dd680a54418aa1f7c7615376b5a4a124e2ac6a0e0bab531ebb6,sav,1,review_required,vault_only,data/btp-national-2003/source-materials/master-survey.sav
 data/us_fp_online/master_data/DOP1_Exp+Control_Client.sav,57620,c283cbdf478fbebf798e57d00b645704601ca8ba838eb30a2630e350173168a4,sav,2,review_required,vault_only,vault/cdd/data/us_fp_online/master_data/DOP1_Exp+Control_Client.sav
 data/us_fp_online/master_data/WS_FTP.LOG,1196,486d34f6ec6d67d87d3ce81b58d47f5260a385191a17f7300d35e4b7206b87d7,log,1,review_required,vault_only,vault/cdd/data/us_fp_online/master_data/WS_FTP.LOG
 data/us_fp_online/master_data/both_waves_final_client.dta,815619,21113a00e8b86ae3eef100d544d1f1e345f209f596d9a56a5f29be9cf822ef50,dta,1,review_required,vault_only,vault/cdd/data/us_fp_online/master_data/both_waves_final_client.dta

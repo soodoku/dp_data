@@ -6,7 +6,7 @@ build_nic2_derived <- function(survey, values) {
   group <- 9200 + as.numeric(unclass(survey$group))[rows]
   attitudes <- nic2_attitudes(survey, 1L)[rows, ]
   result <- historical_derived_columns(values, group,
-    as.numeric(values$hhincome > 7), attitudes
+    attitudes
   )
   item_sd <- purrr::map(attitudes, function(value) {
     as_historical_float(historical_group_summary(value, group, stats::sd))
@@ -28,10 +28,11 @@ build_nic2_derived <- function(survey, values) {
   for (item in term_order) {
     raw_gain <- as_historical_float(raw_gain + terms[, item])
   }
-  result$grpgain <- raw_gain / (1 - values$t1knowcor)
+  result$grpgain <- apply_peer_opportunity_ceiling(
+    raw_gain / (1 - values$t1knowcor), joint, group
+  )
   result$grpgain2 <- NA_real_
   result$grpgainr <- result$grpgain
-  result$loggain <- historical_log_score(result$grpgain)
   result$t1knowlevel <- as_historical_float(mean(
     as_historical_float(rowMeans(before))
   ))

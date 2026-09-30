@@ -1,4 +1,6 @@
 source(file.path(root, "R", "respondents.R"))
+source(file.path(root, "R", "polardata.R"))
+source(file.path(root, "R", "respondent_parity.R"))
 for (name in c(
   "respondent_new_haven", "respondent_btp_primaries",
   "respondent_zeguo", "polardata_derived", "polardata_assembly",
@@ -11,8 +13,8 @@ unresolved_test_fields <- function(poll) {
   fields <- c(
     ppage = "age", female = "female", minority = "minority",
     educ4 = "education_four", educ3 = "education_three",
-    bettered = "higher_education", hhincome = "household_income",
-    highinc = "high_income", t1polint = "political_interest_t1",
+    hhincome = "household_income",
+    t1polint = "political_interest_t1",
     attextreme = "attitude_extremity", readbrief = "read_briefing",
     t1know = "knowledge_t1", t1knowr = "knowledge_t1",
     t2know = "knowledge_t2", t2knowr = "knowledge_t2",
@@ -35,7 +37,7 @@ unresolved_test_fields <- function(poll) {
     ),
     zeguo = stats::setNames(c(
       "industrial_roads", "village_roads", "main_roads",
-      "commercial_roads", "main_roads_rescaled", "other_parks",
+      "commercial_roads", "wenchang_main_avenue", "other_parks",
       "township_image", "cultural_heritage", "sewage"
     ), paste0("att", 1:9))
   )
@@ -46,7 +48,9 @@ unresolved_test_fields <- function(poll) {
   )
   for (wave in 1:2) {
     fields <- c(fields, stats::setNames(
-      paste0(attitude, "_t", wave),
+      paste0(attitude, "_t", wave,
+        if (poll == "zeguo") "_midpoint_imputed" else ""
+      ),
       paste0(prefix, ".t", wave, names(attitude))
     ))
   }
@@ -88,6 +92,39 @@ test_that("resolved polls reproduce historical fields", {
     expected <- expected[!duplicated(expected$caseid), ]
     expect_setequal(caseid[selected], expected$caseid)
     expected <- expected[match(caseid[selected], expected$caseid), ]
+    expected$entropy <- approved_reference_values(
+      id, "entropy", expected$caseid, expected$entropy
+    )
+    if (poll %in% c("new_haven", "zeguo", "btp_primaries")) {
+      corrected <- switch(poll,
+        new_haven = c(
+          "minority", "pminority", "nh.t1endexp", "nh.t1manvol",
+          "nh.t1volloc", "nh.t2endexp", "nh.t2manvol", "nh.t2volloc",
+          "attextreme", "attextreme2", "meanxtreme", "avgsd",
+          "avgsd2", "genvar", "grpgain2", "t2know", "t2knowr",
+          "t1knowcor", "t1knowcor2", "t12knowcor", "t1knowrcor",
+          "knowgain", "knowgainr", "knowgain2", "knowgainr2",
+          "logpk", "tobitpk", "meant1knowcor", "meant1knowcor_ind",
+          "meant1knowrcor", "meant2know", "t1knowlevelcor",
+          "t1knowlevelrcor", "t2knowlevel", "grpgain", "grpgainr", "loggain"
+        ),
+        zeguo = c(
+          "chi.t1att2", "chi.t1att5", "chi.t2att3", "chi.t2att5",
+          "attextreme", "meanxtreme", "avgsd", "genvar",
+          "ppage", "meanage", "grpgain", "grpgainr", "loggain"
+        ),
+        btp_primaries = c(
+          "grpgain", "grpgainr", "loggain", "groupsize", "vareduc",
+          "sdeduc", "meant1know_ind",
+          "meant1knowcor_ind"
+        )
+      )
+      for (field in corrected) {
+        expected[[field]] <- approved_reference_values(
+          id, field, expected$caseid, expected[[field]]
+        )
+      }
+    }
     individual <- get(paste0("build_", poll, "_individual"))(survey)
     fields <- unresolved_test_fields(poll)
     values <- tibble::as_tibble(purrr::map(fields, \(name) {
@@ -100,6 +137,13 @@ test_that("resolved polls reproduce historical fields", {
       )
     }
     values$source_row <- survey$source_row[selected]
+    values$highinc <- above_reference_median(values$hhincome, values$hhincome)
+    expected$phighinc <- approved_reference_values(
+      id, "phighinc", expected$caseid, expected$phighinc
+    )
+    expected$pfemale_ind <- approved_reference_values(
+      id, "pfemale_ind", expected$caseid, expected$pfemale_ind
+    )
     derived <- get(paste0("build_", poll, "_derived"))(survey, values)
     compare <- names(derived)
     if (poll == "zeguo") compare <- setdiff(compare, "genvar")

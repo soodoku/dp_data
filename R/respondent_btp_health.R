@@ -81,7 +81,7 @@ btp_health_attitudes <- function(survey, wave) {
 }
 
 btp_health_knowledge <- function(survey, wave) {
-  keys <- c(q15 = 2, q16 = 1, q17 = 1, q26 = 3, q27 = 3, q28 = 3)
+  keys <- c(q15 = 2, q16 = 1, q17 = 3, q26 = 3, q27 = 3, q28 = 3)
   purrr::imap(keys, function(correct, item) {
     field <- paste0(item, if (wave == 2L) "post" else "")
     value <- btp_source_codes(survey, field, c(1:5, 7))
@@ -116,12 +116,12 @@ build_btp_health_individual <- function(
     ),
     tibble::tibble(
       age = age,
-      female = as.numeric(btp_source_codes(survey, "gender", 1:2) %in% 2),
+      female = as.numeric(btp_source_codes(survey, "gender", 1:2) == 2),
       minority = as.numeric(btp_source_codes(survey, "race", 1:7) != 1),
       education_four = education,
       education_three = collapse_historical_education(education),
-      higher_education = as.numeric(education == 1),
-      household_income = NA_real_, high_income = NA_real_,
+
+      household_income = NA_real_,
       attitude_extremity = extremity,
       read_briefing = NA_real_,
       political_interest_t1 = as_historical_float(c(0, .33, .66, 1)[

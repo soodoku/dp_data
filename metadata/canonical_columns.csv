@@ -5,14 +5,20 @@ respondents,arm,string,TRUE,FALSE,Observed participant status; does not assert r
 respondents,source_row,int32,FALSE,FALSE,One-based row in the original poll survey
 respondents,battery_row,int32,FALSE,FALSE,Historical participant ordering for deposit comparison only
 respondents,female,int32,TRUE,FALSE,Female indicator preserving the source coding
-items,poll_id,string,FALSE,TRUE,Stable poll identifier
-items,item_id,string,FALSE,TRUE,Stable item identifier within poll
-items,item_type,string,FALSE,FALSE,Knowledge attitude process or demographic item
-items,question_text,string,TRUE,FALSE,Fielded wording
-items,construct,string,TRUE,FALSE,Measured construct
-items,scale_min,float64,TRUE,FALSE,Lowest substantive numeric response
-items,scale_max,float64,TRUE,FALSE,Highest substantive numeric response
-items,correct_value,string,TRUE,FALSE,Correct answer for a knowledge item
+items,poll_id,string,FALSE,TRUE,Poll identifier
+items,item_id,string,FALSE,TRUE,Canonical source-column identifier within poll
+items,source_column_t1,string,FALSE,FALSE,Baseline source field
+items,historical_item_id,string,TRUE,FALSE,Historical respondent knowledge item ID when present
+items,historical_item_id_t2,string,TRUE,FALSE,Historical wave-two alias when it differs from the baseline item ID
+items,cor_item_id,string,TRUE,FALSE,Cor-Sood battery item ID when present
+items,question,string,FALSE,FALSE,Question text or sourced paraphrase
+items,wording_source,string,FALSE,FALSE,Wording provenance and exactness
+items,response_type,string,FALSE,FALSE,"Closed, placement, open numeric, or open coded format"
+items,answer_choices,string,TRUE,FALSE,Archived offered choices when recoverable
+items,correct_codes,string,FALSE,FALSE,Scored source code or accepted range
+items,correct_answer,string,FALSE,FALSE,Readable answer or scoring range
+items,source_reference,string,FALSE,FALSE,Source file used to reconstruct the item
+items,coding_note,string,TRUE,FALSE,Open-response rule or source limitation
 responses,poll_id,string,FALSE,TRUE,Stable poll identifier
 responses,respondent_id,string,FALSE,TRUE,Original survey ID or documented file-scoped row ID
 responses,wave,int32,FALSE,TRUE,Ordered measurement wave
@@ -89,6 +95,341 @@ respondent_memberships,weight,float64,FALSE,FALSE,weight
 derived_measures,poll_id,string,FALSE,TRUE,Poll source identifier
 derived_measures,respondent_id,string,FALSE,TRUE,Unique source person; historical duplicate exports share this identity
 derived_measures,legacy_field,string,FALSE,TRUE,Historical derived field; group calculations may include respondent-specific leave-one-out adjustments
+derived_measures,measure_name,string,FALSE,FALSE,Canonical snake_case measure name with group or poll prefix
+derived_measures,aggregation_level,string,FALSE,FALSE,Group or poll calculation level
+derived_measures,respondent_scope,string,FALSE,FALSE,Historical group members or poll sample; leave-one-out and respondent-specific variants identified separately
 derived_measures,definition_version,string,FALSE,TRUE,Historical computation version
 derived_measures,value_numeric,float64,TRUE,FALSE,Source-computed value; nonfinite historical results explicitly classified
 derived_measures,value_status,string,FALSE,FALSE,"finite, missing, positive-infinity or negative-infinity"
+respondent_knowledge,poll_id,string,FALSE,TRUE,Stable poll identifier
+respondent_knowledge,respondent_id,string,FALSE,TRUE,Canonical respondent identity in people
+respondent_knowledge,historical_respondent_id,string,TRUE,FALSE,Historical aggregate ID; null where no transferable historical ID exists
+respondent_knowledge,source_row,int32,FALSE,FALSE,One-based row in the poll source; identity bridge to people
+respondent_knowledge,item_id,string,FALSE,TRUE,Canonical knowledge item; consult knowledge_items for battery definition
+respondent_knowledge,wave,int32,FALSE,TRUE,Canonical knowledge wave 1 or 2; consult source item metadata for fieldwork wave
+respondent_knowledge,source_column,string,FALSE,FALSE,Original source variable scored under the canonical item definition
+respondent_knowledge,correct,int32,TRUE,FALSE,Correct 1 or incorrect 0; raw missingness preserved as null
+respondent_knowledge,correct_zero_filled,int32,FALSE,FALSE,Explicit fixed-denominator score: missing correctness counts as zero
+respondent_knowledge,response_status,string,FALSE,FALSE,Original canonical response status retained alongside zero-filled score
+historical_knowledge_items,poll_id,string,FALSE,TRUE,Stable poll identifier
+historical_knowledge_items,respondent_id,string,FALSE,TRUE,Canonical respondent identity in people
+historical_knowledge_items,historical_respondent_id,string,TRUE,FALSE,Historical aggregate ID; null where no transferable historical ID exists
+historical_knowledge_items,source_row,int32,FALSE,FALSE,One-based row in the poll source
+historical_knowledge_items,item_id,string,FALSE,TRUE,Item in the historical T1 and T2 score
+historical_knowledge_items,wave,int32,FALSE,TRUE,Historical score wave 1 or 2
+historical_knowledge_items,correct,int32,TRUE,FALSE,Historical item correctness; missing source answers remain null where the historical denominator varies
+briefing_reading,poll_id,string,FALSE,TRUE,Stable poll identifier
+briefing_reading,respondent_id,string,FALSE,TRUE,Canonical respondent identity in people
+briefing_reading,historical_respondent_id,string,TRUE,FALSE,Historical aggregate ID; null where no transferable historical ID exists
+briefing_reading,source_row,int32,FALSE,FALSE,One-based row in the poll source
+briefing_reading,source_column,string,FALSE,FALSE,Original survey variable for the reading report
+briefing_reading,raw_code,float64,TRUE,FALSE,Original survey response code
+briefing_reading,reading_score,float64,TRUE,FALSE,Ordinal report scored from zero to one; NIC uses its historical five-category mapping
+analysis_participants,poll_id,string,FALSE,TRUE,Stable poll identifier
+analysis_participants,source_dataset,string,FALSE,TRUE,Source battery: historical; cor_sood; control; or score_only
+analysis_participants,respondent_id,string,FALSE,TRUE,ID within poll and source battery
+analysis_participants,historical_respondent_id,string,TRUE,FALSE,Documented historical caseid alias for source-linked participant rows
+analysis_participants,source_row,int32,FALSE,FALSE,One-based row in source file; AMR uses its baseline row
+analysis_participants,identity_basis,string,FALSE,FALSE,Source ID or file-scoped row identifier
+analysis_participants,arm,string,TRUE,FALSE,Observed treatment or participation category; not necessarily randomized; climate completed denotes all sessions and post survey; invited_noncompleter does not imply no attendance
+analysis_participants,assignment,string,TRUE,FALSE,Assigned or invited group where identified in the source
+analysis_participants,attended,bool,TRUE,FALSE,Event attendance classification; source evidence or explicitly marked absence inference; null when unresolved; see attendance_basis
+analysis_participants,panel,bool,FALSE,FALSE,"Selected analysis-panel membership, requiring both selected comparison scores; original sample restrictions retained. Not eligibility for every phase contrast"
+analysis_participants,small_group_id,string,TRUE,FALSE,Source discussion-group identifier where observed
+analysis_participants,cluster_id,string,TRUE,FALSE,Cluster for study inference; Tanzania uses village
+analysis_participants,country,string,TRUE,FALSE,Participant country where needed to disaggregate a multi-country poll
+analysis_participants,weight,float64,TRUE,FALSE,Existing selected analysis weight; null when unavailable; full supplied inventory in survey_weights; analytical use undecided
+analysis_participants,ba,float64,TRUE,FALSE,Source-specific legacy higher-education proxy; not uniform degree attainment; use education_above_median for relative comparisons
+analysis_participants,female,float64,TRUE,FALSE,Source-derived female indicator where coding is verified
+analysis_item_responses,poll_id,string,FALSE,TRUE,Stable poll identifier
+analysis_item_responses,source_dataset,string,FALSE,TRUE,Source battery; overlapping batteries remain separate until person linkage is established
+analysis_item_responses,respondent_id,string,FALSE,TRUE,ID within poll and source battery
+analysis_item_responses,wave,string,FALSE,TRUE,Standardized t1 baseline; t2 follow-up; t3 later follow-up
+analysis_item_responses,item_id,string,FALSE,TRUE,Canonical item ID from metadata/items.csv
+analysis_item_responses,source_row,int32,FALSE,FALSE,One-based source row
+analysis_item_responses,source_column,string,TRUE,FALSE,Literal original response field recovered through verified source and wave mappings; null when unrecoverable
+analysis_item_responses,raw_value,float64,TRUE,FALSE,Retained original numeric answer code; null for source missingness or unavailable raw answer
+analysis_item_responses,raw_text,string,TRUE,FALSE,Original text response when retained in the source battery
+analysis_item_responses,correct,int32,TRUE,FALSE,Conventional item correctness; DK and reviewed blanks score zero on an observed form; invalid responses and absent questionnaires remain null
+analysis_item_responses,response_status,string,FALSE,FALSE,Answered; source_missing; non_substantive; scored when raw answer is unavailable; wave_absent for a questionnaire confirmed absent by source completion status
+analysis_polls,poll_id,string,FALSE,TRUE,Stable poll identifier
+analysis_polls,title,string,FALSE,FALSE,Canonical poll title
+analysis_polls,year,int32,FALSE,FALSE,Registered poll year
+analysis_polls,place,string,FALSE,FALSE,Existing source place description
+analysis_polls,topic,string,FALSE,FALSE,Poll topic
+analysis_polls,mode,string,TRUE,FALSE,Face-to-face or online mode where established
+analysis_polls,collection,string,FALSE,FALSE,Source collection
+analysis_polls,event_country,string,TRUE,FALSE,Country of the deliberation venue; null for multi-country online events
+analysis_polls,city,string,TRUE,FALSE,Event city when a single venue can be identified
+analysis_polls,location_text,string,TRUE,FALSE,Verbatim reviewed location claim
+analysis_polls,location_reference_id,string,TRUE,FALSE,Reference for reviewed location claim
+analysis_polls,event_month,int32,TRUE,FALSE,Calendar month when one event month is identified
+analysis_polls,event_start_date,date32,TRUE,FALSE,Verified start date for event timing
+analysis_polls,event_end_date,date32,TRUE,FALSE,Verified end date for event timing
+analysis_polls,event_reference_id,string,TRUE,FALSE,Reference for the selected event timing
+analysis_poll_events,poll_id,string,FALSE,TRUE,Stable poll identifier
+analysis_poll_events,event_id,int32,FALSE,TRUE,Sequence of reported event-date claims within poll
+analysis_poll_events,stage,string,FALSE,FALSE,Type of timing reported; ambiguous combined schedules retain the generic stage
+analysis_poll_events,start_date,date32,TRUE,FALSE,Exact start date when the report allows a safe parse
+analysis_poll_events,end_date,date32,TRUE,FALSE,Exact end date when the report allows a safe parse
+analysis_poll_events,month,int32,TRUE,FALSE,Single known event month
+analysis_poll_events,year_conflict,bool,FALSE,FALSE,Reported timing conflicts with registered poll year
+analysis_poll_events,reported_text,string,FALSE,FALSE,Original reviewed event-date statement
+analysis_poll_events,reference_id,string,FALSE,FALSE,Source reference for the timing statement
+analysis_poll_events,source_locator,string,TRUE,FALSE,Location within the referenced source
+analysis_items,poll_id,string,FALSE,TRUE,Stable poll identifier
+analysis_items,item_id,string,FALSE,TRUE,Canonical knowledge_001-style ID within poll
+analysis_items,source_column_t1,string,FALSE,FALSE,Original baseline source field
+analysis_items,historical_item_id,string,TRUE,FALSE,Historical battery source ID
+analysis_items,cor_item_id,string,TRUE,FALSE,Cor-Sood battery source ID
+analysis_items,question,string,FALSE,FALSE,Question wording or sourced paraphrase
+analysis_items,wording_source,string,FALSE,FALSE,Wording exactness and provenance
+analysis_items,response_type,string,FALSE,FALSE,Closed; placement; open numeric; or open coded
+analysis_items,answer_choices,string,TRUE,FALSE,Offered answers where recovered
+analysis_items,correct_codes,string,FALSE,FALSE,Source answer codes scored correct
+analysis_items,correct_answer,string,FALSE,FALSE,Readable answer where recovered
+analysis_items,source_reference,string,FALSE,FALSE,Question provenance file
+analysis_items,coding_note,string,TRUE,FALSE,Open coding or source limitation
+analysis_items,historical_item_id_t2,string,TRUE,FALSE,Historical post-wave alias where it differs from baseline ID
+analysis_scores,poll_id,string,FALSE,TRUE,Stable poll identifier
+analysis_scores,source_dataset,string,FALSE,TRUE,Source battery
+analysis_scores,respondent_id,string,FALSE,TRUE,ID within poll and source battery
+analysis_scores,wave,string,FALSE,TRUE,Standardized t1; t2; or t3 wave
+analysis_scores,n_items,int32,TRUE,FALSE,Number of fielded knowledge items; null for score-only records
+analysis_scores,n_observed,int32,TRUE,FALSE,Number of observed source answers; zero for confirmed absent questionnaire; otherwise null for historical scored exports and score-only records
+analysis_scores,n_correct,int32,TRUE,FALSE,Number scored correct; null for confirmed absent questionnaires and score-only records
+analysis_scores,score,float64,TRUE,FALSE,Proportion correct or published standardized index
+analysis_scores,scale,string,FALSE,FALSE,proportion_correct or standardized_index
+analysis_items,question_display,string,FALSE,FALSE,Question text normalized for readable display
+analysis_items,answer_choices_display,string,TRUE,FALSE,Answer labels normalized for readable display
+analysis_items,correct_answer_display,string,FALSE,FALSE,Correct answer label normalized for readable display
+california_knowledge_responses,poll_id,string,FALSE,FALSE,Stable poll identifier
+california_knowledge_responses,respondent_id,string,FALSE,TRUE,Original participant source ID
+california_knowledge_responses,source_row,int32,FALSE,FALSE,One-based source survey row
+california_knowledge_responses,paired,bool,FALSE,FALSE,Both arrival and departure questionnaires are observed
+california_knowledge_responses,wave_present,bool,FALSE,FALSE,At least one answer in the full wave questionnaire
+california_knowledge_responses,wave,int32,FALSE,TRUE,Arrival wave 2 or departure wave 3
+california_knowledge_responses,item_number,int32,FALSE,TRUE,Question number 27 through 34
+california_knowledge_responses,source_column,string,FALSE,FALSE,Wave-specific source column
+california_knowledge_responses,raw_code,float64,TRUE,FALSE,Source answer code including non-substantive values
+california_knowledge_responses,correct,int32,TRUE,FALSE,Correctness with item nonresponse scored zero on an observed form; invalid responses and absent waves remain null
+california_knowledge_scores,poll_id,string,FALSE,FALSE,Stable poll identifier
+california_knowledge_scores,respondent_id,string,FALSE,TRUE,Original participant source ID
+california_knowledge_scores,source_row,int32,FALSE,FALSE,One-based source survey row
+california_knowledge_scores,paired,bool,FALSE,FALSE,Both arrival and departure questionnaires are observed
+california_knowledge_scores,wave_present,bool,FALSE,FALSE,At least one answer in the full wave questionnaire
+california_knowledge_scores,wave,int32,FALSE,TRUE,Arrival wave 2 or departure wave 3
+california_knowledge_scores,n_items,int32,FALSE,FALSE,Fixed denominator of eight factual questions
+california_knowledge_scores,n_answered,int32,FALSE,FALSE,Number with a recorded source answer
+california_knowledge_scores,n_correct,int32,TRUE,FALSE,Number answered correctly; null for absent questionnaire
+california_knowledge_scores,score_zero_filled,float64,TRUE,FALSE,Number correct divided by eight within an observed questionnaire; absent wave remains null
+analysis_participants,age,float64,TRUE,FALSE,Baseline age in years; BTP 2007 uses survey year minus birth year
+analysis_participants,education,float64,TRUE,FALSE,Reviewed source-specific education grouping: 0; 0.5; 1; categories do not establish common credentials across polls
+analysis_participants,minority,float64,TRUE,FALSE,Source-derived historical minority indicator; missing where no reviewed harmonization exists
+analysis_participants,extremity,float64,TRUE,FALSE,Historical baseline attitude-extremity index; missing where no reviewed harmonization exists
+analysis_participants,read_briefing,float64,TRUE,FALSE,Reported briefing reading before discussions on a zero-to-one ordinal scale; elicited after deliberation
+analysis_attitudes,poll_id,string,FALSE,TRUE,Baseline policy attitude; see docs/analysis-tables.md
+analysis_attitudes,attitude_id,string,FALSE,TRUE,Baseline policy attitude; see docs/analysis-tables.md
+analysis_attitudes,source_column,string,FALSE,FALSE,Baseline policy attitude; see docs/analysis-tables.md
+analysis_attitudes,minimum,float64,FALSE,FALSE,Baseline policy attitude; see docs/analysis-tables.md
+analysis_attitudes,maximum,float64,FALSE,FALSE,Baseline policy attitude; see docs/analysis-tables.md
+analysis_attitudes,label,string,FALSE,FALSE,Baseline policy attitude; see docs/analysis-tables.md
+analysis_attitudes,evidence,string,FALSE,FALSE,Baseline policy attitude; see docs/analysis-tables.md
+analysis_attitudes,construction,string,FALSE,FALSE,Baseline policy attitude; see docs/analysis-tables.md
+analysis_attitude_responses,poll_id,string,FALSE,TRUE,Baseline policy attitude; see docs/analysis-tables.md
+analysis_attitude_responses,source_dataset,string,FALSE,TRUE,Baseline policy attitude; see docs/analysis-tables.md
+analysis_attitude_responses,respondent_id,string,FALSE,TRUE,Baseline policy attitude; see docs/analysis-tables.md
+analysis_attitude_responses,attitude_id,string,FALSE,TRUE,Baseline policy attitude; see docs/analysis-tables.md
+analysis_attitude_responses,wave,string,FALSE,TRUE,Baseline policy attitude; see docs/analysis-tables.md
+analysis_attitude_responses,value,float64,TRUE,FALSE,Baseline policy attitude; see docs/analysis-tables.md
+analysis_phase_scores,poll_id,string,FALSE,TRUE,Stable poll identifier
+analysis_phase_scores,source_dataset,string,FALSE,TRUE,Source battery
+analysis_phase_scores,respondent_id,string,FALSE,TRUE,ID within poll and source battery
+analysis_phase_scores,wave,string,FALSE,FALSE,Uniform event phase: t0 pre-arrival; t1 arrival/start; t2 immediate post; t3 onward followups; interim_1 within-event measurement
+analysis_phase_scores,n_items,int32,TRUE,FALSE,Number of fielded knowledge items; null for score-only records
+analysis_phase_scores,n_observed,int32,TRUE,FALSE,Number of observed source answers; zero for confirmed absent questionnaire; otherwise null for historical scored exports and score-only records
+analysis_phase_scores,n_correct,int32,TRUE,FALSE,Number scored correct; null for confirmed absent questionnaires and score-only records
+analysis_phase_scores,score,float64,TRUE,FALSE,Proportion correct or published standardized index
+analysis_phase_scores,scale,string,FALSE,FALSE,proportion_correct or standardized_index
+analysis_phase_scores,wave_observed,bool,TRUE,FALSE,True if raw answers or source questionnaire evidence establish presence; false if absent; null if undetermined
+analysis_phase_scores,battery_id,string,FALSE,TRUE,Within-source factual battery; different source deposits are not assumed interchangeable
+analysis_phase_scores,original_score_wave,string,FALSE,FALSE,Original canonical score label or knowledge_midterm measure name before event-phase mapping
+analysis_phase_scores,wave_role,string,FALSE,FALSE,Verified role: pre_arrival; arrival; post_deliberation; follow_up; interim_deliberation
+analysis_phase_scores,timing_evidence,string,FALSE,FALSE,Source timing reference supporting event-phase assignment
+analysis_phase_participants,poll_id,string,FALSE,TRUE,Stable poll identifier
+analysis_phase_participants,source_dataset,string,FALSE,TRUE,Source battery: historical; cor_sood; control; or score_only
+analysis_phase_participants,respondent_id,string,FALSE,TRUE,ID within poll and source battery
+analysis_phase_participants,historical_respondent_id,string,TRUE,FALSE,Documented historical caseid alias for source-linked participant rows
+analysis_phase_participants,source_row,int32,FALSE,FALSE,One-based row in source file; AMR uses its baseline row
+analysis_phase_participants,identity_basis,string,FALSE,FALSE,Source ID or file-scoped row identifier
+analysis_phase_participants,arm,string,TRUE,FALSE,Observed treatment or participation category; not necessarily randomized; climate completed denotes all sessions and post survey; invited_noncompleter does not imply no attendance
+analysis_phase_participants,assignment,string,TRUE,FALSE,Assigned or invited group where identified in the source
+analysis_phase_participants,attended,bool,TRUE,FALSE,Event attendance classification; source evidence or explicitly marked absence inference; null when unresolved; see attendance_basis
+analysis_phase_participants,panel,bool,FALSE,FALSE,"Selected analysis-panel membership, requiring both selected comparison scores; original sample restrictions retained. Not eligibility for every phase contrast"
+analysis_phase_participants,small_group_id,string,TRUE,FALSE,Source discussion-group identifier where observed
+analysis_phase_participants,cluster_id,string,TRUE,FALSE,Cluster for study inference; Tanzania uses village
+analysis_phase_participants,country,string,TRUE,FALSE,Participant country where needed to disaggregate a multi-country poll
+analysis_phase_participants,weight,float64,TRUE,FALSE,Existing selected analysis weight; null when unavailable; full supplied inventory in survey_weights; analytical use undecided
+analysis_phase_participants,ba,float64,TRUE,FALSE,Source-specific legacy higher-education proxy; not uniform degree attainment; use education_above_median for relative comparisons
+analysis_phase_participants,female,float64,TRUE,FALSE,Source-derived female indicator where coding is verified
+analysis_phase_participants,age,float64,TRUE,FALSE,Baseline age in years; BTP 2007 uses survey year minus birth year
+analysis_phase_participants,education,float64,TRUE,FALSE,Reviewed source-specific education grouping: 0; 0.5; 1; categories do not establish common credentials across polls
+analysis_phase_participants,minority,float64,TRUE,FALSE,Source-derived historical minority indicator; missing where no reviewed harmonization exists
+analysis_phase_participants,extremity,float64,TRUE,FALSE,Historical baseline attitude-extremity index; missing where no reviewed harmonization exists
+analysis_phase_participants,read_briefing,float64,TRUE,FALSE,Reported briefing reading before discussions on a zero-to-one ordinal scale; elicited after deliberation
+analysis_phase_participants,study_id,string,FALSE,FALSE,Underlying study identity; source-specific cohort aliases share this identifier and must not be pooled as independent studies
+analysis_phase_scores,study_id,string,FALSE,FALSE,Underlying study identity; source-specific cohort aliases share this identifier and must not be pooled as independent studies
+analysis_phase_participants,attendance_status,string,FALSE,FALSE,attended; did_not_attend; or unknown; attendance_basis distinguishes source evidence from inference
+analysis_phase_participants,attendance_evidence,string,FALSE,FALSE,Specific source fields or retained cohort evidence supporting attendance; unknown is explicit
+analysis_phase_participants,sessions_attended,int32,TRUE,FALSE,Number of attended discussion sessions explicitly recorded in source; scheduled sessions are not attendance
+analysis_phase_scores,wave_instance_id,string,FALSE,TRUE,Specific survey occasion within a study; multiple occasions may share the same event phase
+analysis_phase_scores,original_survey_wave,string,FALSE,FALSE,"Literal survey wave designation, distinct from legacy analytical score labels"
+analysis_phase_scores,questionnaire_presence_status,string,FALSE,FALSE,observed; absent; or unknown; an observed questionnaire with blank quiz items remains observed
+analysis_studies,poll_id,string,FALSE,TRUE,Source-specific catalog or cohort identifier
+analysis_studies,study_id,string,FALSE,FALSE,Underlying study identifier shared by overlapping extracts of the same experiment
+analysis_survey_waves,poll_id,string,FALSE,TRUE,Source-specific catalog or cohort identifier
+analysis_survey_waves,study_id,string,FALSE,FALSE,Underlying study identifier shared across cohort aliases
+analysis_survey_waves,wave_instance_id,string,FALSE,TRUE,Survey occasion identifier within underlying study; shared by source aliases for the same occasion
+analysis_survey_waves,original_survey_wave,string,FALSE,FALSE,Original instrument wave label; never inferred solely from the selected-score alias
+analysis_survey_waves,wave,string,FALSE,FALSE,Canonical phase label: t0; t1; t2; t3 or later; interim_1 or later
+analysis_survey_waves,wave_role,string,FALSE,FALSE,pre_arrival; arrival; post_deliberation; follow_up; or interim_deliberation
+analysis_survey_waves,mode,string,FALSE,FALSE,Interview mode where documented; unknown stays explicit
+analysis_survey_waves,timing_status,string,FALSE,FALSE,Strength and scope of timing verification from instruments or fieldwork reports
+analysis_survey_waves,availability,string,FALSE,FALSE,Distinguishes exported scores from retained but unscored source waves
+analysis_survey_waves,battery_scope,string,FALSE,FALSE,Coverage and comparability of knowledge items at this wave; partial batteries remain explicit
+analysis_survey_waves,source_path,string,FALSE,FALSE,Retained source location; archival-only sources are not dependencies of this catalog build
+analysis_survey_waves,source_fields,string,FALSE,FALSE,Raw field names or documented field families for this survey occasion
+analysis_survey_waves,timing_evidence,string,FALSE,FALSE,Primary questionnaire or report and page supporting timing assignment
+analysis_survey_waves,temporal_order,int32,FALSE,FALSE,Chronological order of survey occasions within study; does not imply equal spacing
+analysis_survey_waves,date_start,date32,TRUE,FALSE,Documented first fieldwork date; null where unknown
+analysis_survey_waves,date_end,date32,TRUE,FALSE,Documented last fieldwork date; null where unknown
+analysis_phase_item_responses,poll_id,string,FALSE,TRUE,Stable poll identifier
+analysis_phase_item_responses,source_dataset,string,FALSE,TRUE,Source cohort
+analysis_phase_item_responses,respondent_id,string,FALSE,TRUE,Identity within source cohort
+analysis_phase_item_responses,battery_id,string,FALSE,TRUE,Explicit comparable item battery; expanded and partial batteries remain separate
+analysis_phase_item_responses,wave,string,FALSE,FALSE,Canonical event phase
+analysis_phase_item_responses,item_id,string,FALSE,TRUE,Canonical question ID in analysis_items
+analysis_phase_item_responses,source_row,int32,TRUE,FALSE,Original source-file row; Denmark arrival rows refer to arrival.sav
+analysis_phase_item_responses,source_column,string,TRUE,FALSE,Literal original response field recovered through verified source and wave mappings; null when unrecoverable
+analysis_phase_item_responses,raw_value,float64,TRUE,FALSE,Retained original numeric answer code; null for source missingness or unavailable raw answer
+analysis_phase_item_responses,raw_text,string,TRUE,FALSE,Original text answer
+analysis_phase_item_responses,correct,int32,TRUE,FALSE,Conventional item correctness; DK and reviewed blanks score zero on an observed form; invalid responses and absent questionnaires remain null
+analysis_phase_item_responses,response_status,string,FALSE,FALSE,Original answer status or wave_absent
+analysis_phase_item_responses,wave_observed,bool,TRUE,FALSE,Questionnaire presence established from raw fields; not quiz correctness
+analysis_phase_item_responses,original_score_wave,string,FALSE,FALSE,Source analytical wave label or arrival for added arrival responses
+analysis_phase_item_responses,study_id,string,FALSE,FALSE,Underlying study identity
+analysis_phase_item_responses,wave_instance_id,string,FALSE,TRUE,Source survey occasion
+analysis_phase_item_responses,original_survey_wave,string,FALSE,FALSE,Original questionnaire wave label
+analysis_participants,education_above_median,bool,TRUE,FALSE,Above the empirical education median of unique historical-polardata participants or verified A1R 2019 attendees; ties false; missing and unsupported sources null; fixed before comparison exclusions
+analysis_participants,income_above_median,bool,TRUE,FALSE,Strictly above the empirical income median of unique historical-polardata participants; ties false; missing responses and unsupported sources null; fixed before comparison-specific exclusions
+analysis_phase_participants,education_above_median,bool,TRUE,FALSE,Above the empirical education median of unique historical-polardata participants or verified A1R 2019 attendees; ties false; missing and unsupported sources null; fixed before comparison exclusions
+analysis_phase_participants,income_above_median,bool,TRUE,FALSE,Strictly above the empirical income median of unique historical-polardata participants; ties false; missing responses and unsupported sources null; fixed before comparison-specific exclusions
+attitude_contrasts,poll_id,string,FALSE,TRUE,Stable poll identifier
+attitude_contrasts,attitude_id,string,FALSE,TRUE,Attitude identifier derived from the primary baseline field
+attitude_contrasts,contrast_id,string,FALSE,TRUE,Named event-phase comparison
+attitude_contrasts,primary,bool,FALSE,FALSE,True for the main index catalog comparison
+attitude_contrasts,source_dataset,string,FALSE,FALSE,Source cohort; historical means the reconstructed polardata sample
+attitude_contrasts,earlier_column,string,FALSE,FALSE,Earlier score column in output/polardata/polardata.parquet
+attitude_contrasts,later_column,string,FALSE,FALSE,Later score column in output/polardata/polardata.parquet
+attitude_contrasts,earlier_wave,string,FALSE,FALSE,Canonical earlier phase label
+attitude_contrasts,later_wave,string,FALSE,FALSE,Canonical later phase label
+attitude_contrasts,earlier_phase,string,FALSE,FALSE,Earlier event-stage meaning
+attitude_contrasts,later_phase,string,FALSE,FALSE,Later event-stage meaning
+attitude_contrasts,earlier_wave_instance_id,string,FALSE,FALSE,Earlier original survey occasion key
+attitude_contrasts,later_wave_instance_id,string,FALSE,FALSE,Later original survey occasion key
+attitude_contrasts,evidence,string,FALSE,FALSE,Source evidence supporting the reviewed contrast
+survey_weight_definitions,poll_id,string,FALSE,FALSE,Poll containing the retained source
+survey_weight_definitions,source_id,string,FALSE,TRUE,Registered source file identifier
+survey_weight_definitions,weight_id,string,FALSE,TRUE,Source-column-derived snake_case weight identifier
+survey_weight_definitions,source_column,string,FALSE,FALSE,Original weight column name
+survey_weight_definitions,source_unit_column,string,TRUE,FALSE,Original unit ID column; null for file-row identity
+survey_weight_definitions,source_wave_column,string,TRUE,FALSE,Original wave column when the source stores one row per wave
+survey_weight_definitions,source_wave,string,TRUE,FALSE,Original wave value or literal source prefix; not a canonical timing inference
+survey_weight_definitions,weight_group_column,string,TRUE,FALSE,Source column defining the context in which weights are valid
+survey_weight_definitions,variable_label,string,TRUE,FALSE,Original variable label when retained; null when unavailable
+survey_weight_definitions,population_scope,string,FALSE,FALSE,Documented population or explicit unresolved scope
+survey_weight_definitions,wave_scope,string,FALSE,FALSE,Documented wave scope or explicit unresolved scope
+survey_weight_definitions,evidence,string,FALSE,FALSE,Retained evidence for the source field and scope
+survey_weight_definitions,usage_decision,string,FALSE,FALSE,Whether use in analysis has been decided
+survey_weight_definitions,source_path,string,FALSE,FALSE,Repository-relative retained source path
+survey_weight_definitions,source_sha256,string,FALSE,FALSE,SHA256 of the exact source bytes underlying row identity
+survey_weights,poll_id,string,FALSE,FALSE,Poll containing the retained source
+survey_weights,source_id,string,FALSE,TRUE,Registered source file identifier
+survey_weights,weight_id,string,FALSE,TRUE,Source-column-derived snake_case weight identifier
+survey_weights,source_row,int32,FALSE,TRUE,One-based physical row of the retained source file
+survey_weights,source_unit_id,string,TRUE,FALSE,Original source unit ID; may repeat across waves; file row remains authoritative
+survey_weights,source_wave,string,TRUE,FALSE,Original wave value or literal source prefix; not a canonical timing inference
+survey_weights,weight_group,string,TRUE,FALSE,Original weighting context; not a pooling instruction
+survey_weights,value,float64,TRUE,FALSE,Unchanged supplied weight; missing and zero preserved
+tanzania_attitude_definitions,poll_id,string,FALSE,FALSE,Poll identifier
+tanzania_attitude_definitions,source_id,string,FALSE,TRUE,Registered respondent source identifier
+tanzania_attitude_definitions,attitude_id,string,FALSE,TRUE,Semantic policy item identifier
+tanzania_attitude_definitions,pre_column,string,FALSE,FALSE,Original baseline response column
+tanzania_attitude_definitions,post_column,string,FALSE,FALSE,Original follow-up response column
+tanzania_attitude_definitions,lower,float64,FALSE,FALSE,Documented lowest substantive response code
+tanzania_attitude_definitions,upper,float64,FALSE,FALSE,Documented highest substantive response code
+tanzania_attitude_definitions,missing_codes,string,FALSE,FALSE,Semicolon-separated non-substantive source codes excluded from scaling
+tanzania_attitude_definitions,midpoint,float64,FALSE,FALSE,Numeric midpoint of normalized response scale; interpretation follows source anchors
+tanzania_attitude_definitions,question_summary,string,FALSE,FALSE,Policy question wording or summary; full wording in retained evidence
+tanzania_attitude_definitions,low_endpoint,string,FALSE,FALSE,Meaning of normalized value zero
+tanzania_attitude_definitions,high_endpoint,string,FALSE,FALSE,Meaning of normalized value one; original source direction preserved
+tanzania_attitude_definitions,discussion_round,string,FALSE,FALSE,First or second recorded group assignment spanning four topical discussions
+tanzania_attitude_definitions,group_source_column,string,FALSE,FALSE,Literal group assignment column used for this item
+tanzania_attitude_definitions,group_source_id,string,FALSE,FALSE,Registered group roster source identifier
+tanzania_attitude_definitions,scoring_scope,string,FALSE,FALSE,Population to which reviewed scales and canonical phases apply
+tanzania_attitude_definitions,evidence,string,FALSE,FALSE,Retained question and response-scale evidence
+tanzania_attitude_definitions,group_evidence,string,FALSE,FALSE,Evidence for linking item topic to recorded group assignment
+tanzania_attitude_definitions,phase_evidence,string,FALSE,FALSE,Evidence for household baseline and delayed telephone follow-up
+tanzania_attitude_definitions,source_path,string,FALSE,FALSE,Retained respondent source path
+tanzania_attitude_definitions,source_sha256,string,FALSE,FALSE,Hash anchoring physical respondent source rows
+tanzania_attitude_definitions,group_source_path,string,FALSE,FALSE,Retained group roster path
+tanzania_attitude_definitions,group_source_sha256,string,FALSE,FALSE,Hash of original group roster
+tanzania_attitude_responses,poll_id,string,FALSE,FALSE,Poll identifier
+tanzania_attitude_responses,source_id,string,FALSE,TRUE,Registered respondent source identifier
+tanzania_attitude_responses,source_row,int32,FALSE,TRUE,One-based physical row in retained respondent source
+tanzania_attitude_responses,source_unit_id,string,FALSE,FALSE,Original HHID; source row and hash remain authoritative
+tanzania_attitude_responses,source_sample,string,FALSE,FALSE,Original sample label distinguishing citizens elites and moderators
+tanzania_attitude_responses,attitude_id,string,FALSE,TRUE,Semantic policy item identifier
+tanzania_attitude_responses,source_column,string,FALSE,FALSE,Original item response column for this wave
+tanzania_attitude_responses,source_wave,string,FALSE,TRUE,Original wave suffix 0 or 1
+tanzania_attitude_responses,wave_instance_id,string,TRUE,FALSE,Existing canonical citizen occasion; null for noncitizen records
+tanzania_attitude_responses,wave,string,TRUE,FALSE,Canonical citizen t0 baseline or t3 delayed follow-up; null for noncitizens
+tanzania_attitude_responses,wave_role,string,TRUE,FALSE,Canonical citizen pre_arrival or follow_up role; null for noncitizens
+tanzania_attitude_responses,discussion_round,string,FALSE,FALSE,First or second recorded group assignment spanning four topical discussions
+tanzania_attitude_responses,group_id,string,TRUE,FALSE,Literal recorded group for this topic; null when absent; does not establish attendance or invitation
+tanzania_attitude_responses,raw_value_label,string,TRUE,FALSE,Original response value label when supplied
+tanzania_attitude_responses,raw_value,float64,TRUE,FALSE,Unchanged source response including missing sentinels
+tanzania_attitude_responses,response_status,string,FALSE,FALSE,answered nonresponse system_missing or out_of_scope; noncitizen rows are not scored
+tanzania_attitude_responses,value,float64,TRUE,FALSE,Citizen response normalized using fixed source endpoints; no weighting
+analysis_participants,attendance_basis,string,FALSE,FALSE,source_indicator; source_session_records; observed_post_questionnaire; reviewed_attendance_evidence; historical_sample_membership; retained_source_classification; inferred_absent_post_questionnaire; or unknown
+analysis_phase_participants,attendance_basis,string,FALSE,FALSE,source_indicator; source_session_records; observed_post_questionnaire; reviewed_attendance_evidence; historical_sample_membership; retained_source_classification; inferred_absent_post_questionnaire; or unknown
+analysis_item_responses,knowledge_response,string,TRUE,FALSE,correct; incorrect; or dk for explicit do-not-know or cannot-say responses; null for other missingness or unrecoverable scored-only responses
+analysis_item_responses,response_reason,string,FALSE,FALSE,Source response classification kept separate from correctness and questionnaire presence
+analysis_item_responses,source_response_label,string,TRUE,FALSE,Original source value label or explicitly documented answer label; null when unavailable
+analysis_phase_item_responses,knowledge_response,string,TRUE,FALSE,correct; incorrect; or dk for explicit do-not-know or cannot-say responses; null for other missingness or unrecoverable scored-only responses
+analysis_phase_item_responses,response_reason,string,FALSE,FALSE,Source response classification kept separate from correctness and questionnaire presence
+analysis_phase_item_responses,source_response_label,string,TRUE,FALSE,Original source value label or explicitly documented answer label; null when unavailable
+analysis_phase_attitudes,poll_id,string,FALSE,TRUE,poll id
+analysis_phase_attitudes,attitude_id,string,FALSE,TRUE,attitude id
+analysis_phase_attitudes,pre_column,string,FALSE,FALSE,pre column
+analysis_phase_attitudes,post_column,string,FALSE,FALSE,post column
+analysis_phase_attitudes,minimum,float64,FALSE,FALSE,Lowest offered numeric response
+analysis_phase_attitudes,maximum,float64,FALSE,FALSE,Highest offered numeric response
+analysis_phase_attitudes,label,string,FALSE,FALSE,label
+analysis_phase_attitudes,direction,string,FALSE,FALSE,What increasing numeric responses mean in this poll; no cross-poll polarity harmonization
+analysis_phase_attitudes,nonresponse_codes,string,FALSE,FALSE,Source-documented nonanswer codes separated by |; not midpoint-imputed
+analysis_phase_attitudes,evidence,string,FALSE,FALSE,Retained instrument or authored source evidence
+analysis_phase_attitude_responses,poll_id,string,FALSE,TRUE,poll id
+analysis_phase_attitude_responses,source_dataset,string,FALSE,TRUE,Canonical source battery name; does not establish treatment allocation
+analysis_phase_attitude_responses,respondent_id,string,FALSE,TRUE,respondent id
+analysis_phase_attitude_responses,attitude_id,string,FALSE,TRUE,attitude id
+analysis_phase_attitude_responses,wave_instance_id,string,FALSE,TRUE,wave instance id
+analysis_phase_attitude_responses,wave,string,FALSE,FALSE,Canonical t0 pre-arrival or t2 immediate exit; source wave names remain in wave catalog
+analysis_phase_attitude_responses,wave_role,string,FALSE,FALSE,wave role
+analysis_phase_attitude_responses,source_column,string,FALSE,FALSE,source column
+analysis_phase_attitude_responses,source_row,int32,FALSE,FALSE,source row
+analysis_phase_attitude_responses,raw_value,float64,TRUE,FALSE,Unchanged source response including invalid and nonanswer codes
+analysis_phase_attitude_responses,source_response_label,string,TRUE,FALSE,Original codebook value label when available; no invented labels
+analysis_phase_attitude_responses,response_status,string,FALSE,FALSE,answered; non_substantive; invalid_response; blank; source_missing; absent_form
+analysis_phase_attitude_responses,wave_observed,bool,TRUE,FALSE,Independent source questionnaire presence; not inferred from item correctness or attendance
+analysis_phase_attitude_responses,value,float64,TRUE,FALSE,Offered substantive integer response normalized by fixed endpoints; all nonanswers missing; no midpoint imputation

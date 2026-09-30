@@ -2,23 +2,39 @@ test_that("metadata contracts are valid", {
   expect_no_error(validate_metadata())
 })
 
+test_that("control-poll modes match the fielded deliberations", {
+  polls <- read_metadata("polls")
+  observed <- stats::setNames(polls$mode, polls$poll_id)
+  expect_identical(observed[["america-in-one-room-2019"]], "face-to-face")
+  expect_identical(observed[["a1r-climate-2021"]], "online")
+  expect_identical(observed[["amr-2024"]], "online")
+})
+
 test_that("the Frictionless package names every metadata table", {
   package <- frictionless::read_package(project_path("datapackage.json"))
   expect_setequal(
     frictionless::resource_names(package),
     c(
       "oos_sources",
+      "survey_weights",
+      "attitude_index_wave_fixes", "paired_attitude_items",
+      "tanzania_attitude_items",
       "respondent_sources",
       "respondent_source_components",
+      "education_normalization",
       "polardata_reviewed_covariances",
       "polardata_fields",
+      "derived_measure_names",
       "polardata_targets",
       "measure_definitions",
+      "harmonized_ordinal_measures",
       "measure_inputs",
       "artifact_types",
       "archive_collections",
       "artifacts",
       "canonical_tables",
+      "analysis_phase_roles",
+      "analysis_survey_waves",
       "canonical_columns",
       "knowledge_batteries",
       "survey_sources",
@@ -26,7 +42,13 @@ test_that("the Frictionless package names every metadata table", {
       "component_field_exclusions",
       "source_field_exclusions",
       "knowledge_items",
+      "knowledge_response_codes", "marousi_knowledge_items",
+      "items",
       "knowledge_join_contracts",
+      "poll_references",
+      "poll_facts",
+      "poll_material_coverage",
+      "document_previews",
       "polls",
       "poll_aliases",
       "source_bundles",

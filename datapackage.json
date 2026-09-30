@@ -2,7 +2,7 @@
   "name": "deliberative-poll-data",
   "title": "Deliberative Poll data",
   "description": "Source metadata and contracts for Deliberative Poll research data.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "resources": [
     {
       "name": "oos_sources",
@@ -39,6 +39,262 @@
           },
           {
             "name": "source_id",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "survey_weights",
+      "path": "metadata/survey_weights.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "source_id",
+            "type": "string"
+          },
+          {
+            "name": "weight_id",
+            "type": "string"
+          },
+          {
+            "name": "source_column",
+            "type": "string"
+          },
+          {
+            "name": "source_unit_column",
+            "type": "string"
+          },
+          {
+            "name": "source_wave_column",
+            "type": "string"
+          },
+          {
+            "name": "source_wave",
+            "type": "string"
+          },
+          {
+            "name": "weight_group_column",
+            "type": "string"
+          },
+          {
+            "name": "variable_label",
+            "type": "string"
+          },
+          {
+            "name": "population_scope",
+            "type": "string"
+          },
+          {
+            "name": "wave_scope",
+            "type": "string"
+          },
+          {
+            "name": "evidence",
+            "type": "string"
+          },
+          {
+            "name": "usage_decision",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "attitude_index_wave_fixes",
+      "path": "metadata/attitude_index_wave_fixes.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "dpnum",
+            "type": "number"
+          },
+          {
+            "name": "t1var",
+            "type": "string"
+          },
+          {
+            "name": "archived_later_column",
+            "type": "string"
+          },
+          {
+            "name": "reviewed_later_column",
+            "type": "string"
+          },
+          {
+            "name": "initial_wave_instance_id",
+            "type": "string"
+          },
+          {
+            "name": "arrival_wave_instance_id",
+            "type": "string"
+          },
+          {
+            "name": "later_wave_instance_id",
+            "type": "string"
+          },
+          {
+            "name": "issue_id",
+            "type": "string"
+          },
+          {
+            "name": "evidence",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "paired_attitude_items",
+      "path": "metadata/paired_attitude_items.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "attitude_id",
+            "type": "string"
+          },
+          {
+            "name": "pre_column",
+            "type": "string"
+          },
+          {
+            "name": "post_column",
+            "type": "string"
+          },
+          {
+            "name": "minimum",
+            "type": "number"
+          },
+          {
+            "name": "maximum",
+            "type": "number"
+          },
+          {
+            "name": "label",
+            "type": "string"
+          },
+          {
+            "name": "direction",
+            "type": "string"
+          },
+          {
+            "name": "nonresponse_codes",
+            "type": "string"
+          },
+          {
+            "name": "evidence",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "tanzania_attitude_items",
+      "path": "metadata/tanzania_attitude_items.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "source_id",
+            "type": "string"
+          },
+          {
+            "name": "attitude_id",
+            "type": "string"
+          },
+          {
+            "name": "pre_column",
+            "type": "string"
+          },
+          {
+            "name": "post_column",
+            "type": "string"
+          },
+          {
+            "name": "lower",
+            "type": "number"
+          },
+          {
+            "name": "upper",
+            "type": "number"
+          },
+          {
+            "name": "missing_codes",
+            "type": "string"
+          },
+          {
+            "name": "midpoint",
+            "type": "number"
+          },
+          {
+            "name": "question_summary",
+            "type": "string"
+          },
+          {
+            "name": "low_endpoint",
+            "type": "string"
+          },
+          {
+            "name": "high_endpoint",
+            "type": "string"
+          },
+          {
+            "name": "discussion_round",
+            "type": "string"
+          },
+          {
+            "name": "group_source_column",
+            "type": "string"
+          },
+          {
+            "name": "group_source_id",
+            "type": "string"
+          },
+          {
+            "name": "scoring_scope",
+            "type": "string"
+          },
+          {
+            "name": "evidence",
+            "type": "string"
+          },
+          {
+            "name": "group_evidence",
+            "type": "string"
+          },
+          {
+            "name": "phase_evidence",
             "type": "string"
           }
         ]
@@ -125,6 +381,54 @@
       }
     },
     {
+      "name": "education_normalization",
+      "path": "metadata/education_normalization.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "source_column",
+            "type": "string"
+          },
+          {
+            "name": "source_codes",
+            "type": "string"
+          },
+          {
+            "name": "ordered_values",
+            "type": "string"
+          },
+          {
+            "name": "missing_codes",
+            "type": "string"
+          },
+          {
+            "name": "override_column",
+            "type": "string"
+          },
+          {
+            "name": "override_code",
+            "type": "number"
+          },
+          {
+            "name": "override_value",
+            "type": "number"
+          },
+          {
+            "name": "evidence",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
       "name": "polardata_reviewed_covariances",
       "path": "metadata/polardata_reviewed_covariances.csv",
       "profile": "tabular-data-resource",
@@ -179,6 +483,34 @@
           },
           {
             "name": "evidence",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "derived_measure_names",
+      "path": "metadata/derived_measure_names.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "legacy_field",
+            "type": "string"
+          },
+          {
+            "name": "measure_name",
+            "type": "string"
+          },
+          {
+            "name": "aggregation_level",
+            "type": "string"
+          },
+          {
+            "name": "respondent_scope",
             "type": "string"
           }
         ]
@@ -271,6 +603,54 @@
           },
           {
             "name": "calibration_sample",
+            "type": "string"
+          },
+          {
+            "name": "evidence",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "harmonized_ordinal_measures",
+      "path": "metadata/harmonized_ordinal_measures.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "definition_id",
+            "type": "string"
+          },
+          {
+            "name": "measure_id",
+            "type": "string"
+          },
+          {
+            "name": "source_column",
+            "type": "string"
+          },
+          {
+            "name": "min_code",
+            "type": "number"
+          },
+          {
+            "name": "max_code",
+            "type": "number"
+          },
+          {
+            "name": "high_code",
+            "type": "number"
+          },
+          {
+            "name": "missing_codes",
             "type": "string"
           },
           {
@@ -465,6 +845,122 @@
       }
     },
     {
+      "name": "analysis_phase_roles",
+      "path": "metadata/analysis_phase_roles.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "source_dataset",
+            "type": "string"
+          },
+          {
+            "name": "score_wave",
+            "type": "string"
+          },
+          {
+            "name": "wave",
+            "type": "string"
+          },
+          {
+            "name": "wave_role",
+            "type": "string"
+          },
+          {
+            "name": "timing_evidence",
+            "type": "string"
+          },
+          {
+            "name": "original_survey_wave",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "analysis_survey_waves",
+      "path": "metadata/analysis_survey_waves.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "study_id",
+            "type": "string"
+          },
+          {
+            "name": "wave_instance_id",
+            "type": "string"
+          },
+          {
+            "name": "original_survey_wave",
+            "type": "string"
+          },
+          {
+            "name": "wave",
+            "type": "string"
+          },
+          {
+            "name": "wave_role",
+            "type": "string"
+          },
+          {
+            "name": "temporal_order",
+            "type": "number"
+          },
+          {
+            "name": "mode",
+            "type": "string"
+          },
+          {
+            "name": "timing_status",
+            "type": "string"
+          },
+          {
+            "name": "date_start",
+            "type": "date"
+          },
+          {
+            "name": "date_end",
+            "type": "date"
+          },
+          {
+            "name": "availability",
+            "type": "string"
+          },
+          {
+            "name": "battery_scope",
+            "type": "string"
+          },
+          {
+            "name": "source_path",
+            "type": "string"
+          },
+          {
+            "name": "source_fields",
+            "type": "string"
+          },
+          {
+            "name": "timing_evidence",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
       "name": "canonical_columns",
       "path": "metadata/canonical_columns.csv",
       "profile": "tabular-data-resource",
@@ -595,6 +1091,10 @@
           },
           {
             "name": "review_note",
+            "type": "string"
+          },
+          {
+            "name": "label_encoding",
             "type": "string"
           }
         ]
@@ -753,6 +1253,194 @@
       }
     },
     {
+      "name": "knowledge_response_codes",
+      "path": "metadata/knowledge_response_codes.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "source_column",
+            "type": "string"
+          },
+          {
+            "name": "code",
+            "type": "number"
+          },
+          {
+            "name": "label",
+            "type": "string"
+          },
+          {
+            "name": "evidence",
+            "type": "string"
+          },
+          {
+            "name": "response_reason",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "marousi_knowledge_items",
+      "path": "metadata/marousi_knowledge_items.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "item_id",
+            "type": "string"
+          },
+          {
+            "name": "item_order",
+            "type": "number"
+          },
+          {
+            "name": "wave",
+            "type": "string"
+          },
+          {
+            "name": "original_survey_wave",
+            "type": "string"
+          },
+          {
+            "name": "source_column",
+            "type": "string"
+          },
+          {
+            "name": "authored_correct_column",
+            "type": "string"
+          },
+          {
+            "name": "correct_values",
+            "type": "number"
+          },
+          {
+            "name": "incorrect_values",
+            "type": "string"
+          },
+          {
+            "name": "missing_values",
+            "type": "string"
+          },
+          {
+            "name": "response_type",
+            "type": "string"
+          },
+          {
+            "name": "n_substantive_options",
+            "type": "number"
+          },
+          {
+            "name": "source_question_label",
+            "type": "string"
+          },
+          {
+            "name": "telephone_question_number",
+            "type": "number"
+          },
+          {
+            "name": "telephone_question_text",
+            "type": "string"
+          },
+          {
+            "name": "question_text_scope",
+            "type": "string"
+          },
+          {
+            "name": "correctness_basis",
+            "type": "string"
+          },
+          {
+            "name": "identity_basis",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "items",
+      "path": "metadata/items.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "item_id",
+            "type": "string"
+          },
+          {
+            "name": "source_column_t1",
+            "type": "string"
+          },
+          {
+            "name": "historical_item_id",
+            "type": "string"
+          },
+          {
+            "name": "cor_item_id",
+            "type": "string"
+          },
+          {
+            "name": "question",
+            "type": "string"
+          },
+          {
+            "name": "wording_source",
+            "type": "string"
+          },
+          {
+            "name": "response_type",
+            "type": "string"
+          },
+          {
+            "name": "answer_choices",
+            "type": "string"
+          },
+          {
+            "name": "correct_codes",
+            "type": "string"
+          },
+          {
+            "name": "correct_answer",
+            "type": "string"
+          },
+          {
+            "name": "source_reference",
+            "type": "string"
+          },
+          {
+            "name": "coding_note",
+            "type": "string"
+          },
+          {
+            "name": "historical_item_id_t2",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
       "name": "knowledge_join_contracts",
       "path": "metadata/knowledge_join_contracts.csv",
       "profile": "tabular-data-resource",
@@ -795,6 +1483,190 @@
           },
           {
             "name": "unmatched_policy",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "poll_references",
+      "path": "metadata/poll_references.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "reference_id",
+            "type": "string"
+          },
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "kind",
+            "type": "string"
+          },
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "url",
+            "type": "string"
+          },
+          {
+            "name": "local_artifact_id",
+            "type": "string"
+          },
+          {
+            "name": "accessed",
+            "type": "date"
+          },
+          {
+            "name": "notes",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "poll_facts",
+      "path": "metadata/poll_facts.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "field",
+            "type": "string"
+          },
+          {
+            "name": "value",
+            "type": "string"
+          },
+          {
+            "name": "reference_id",
+            "type": "string"
+          },
+          {
+            "name": "source_locator",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "type": "string"
+          },
+          {
+            "name": "notes",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "poll_material_coverage",
+      "path": "metadata/poll_material_coverage.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          },
+          {
+            "name": "material_type",
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "type": "string"
+          },
+          {
+            "name": "notes",
+            "type": "string"
+          },
+          {
+            "name": "checked_references",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "document_previews",
+      "path": "metadata/document_previews.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "UTF-8",
+      "schema": {
+        "fields": [
+          {
+            "name": "source_path",
+            "type": "string"
+          },
+          {
+            "name": "preview_path",
+            "type": "string"
+          },
+          {
+            "name": "source_sha256",
+            "type": "string"
+          },
+          {
+            "name": "preview_sha256",
+            "type": "string"
+          },
+          {
+            "name": "converter_version",
+            "type": "string"
+          },
+          {
+            "name": "platform",
+            "type": "string"
+          },
+          {
+            "name": "pages",
+            "type": "number"
+          },
+          {
+            "name": "text_check",
+            "type": "string"
+          },
+          {
+            "name": "visual_check",
+            "type": "string"
+          },
+          {
+            "name": "visual_pages",
+            "type": "string"
+          },
+          {
+            "name": "source_token_coverage",
+            "type": "number"
+          },
+          {
+            "name": "distinct_word_coverage",
+            "type": "number"
+          },
+          {
+            "name": "qa_notes",
+            "type": "string"
+          },
+          {
+            "name": "rebuild_command",
             "type": "string"
           }
         ]

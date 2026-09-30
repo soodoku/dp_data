@@ -3,6 +3,7 @@
 *.md text eol=lf
 *.R text eol=lf
 *.tab text eol=lf
+output/polardata/*.tab whitespace=-trailing-space
 *.yml text eol=lf
 *.yaml text eol=lf
 *.dta binary
@@ -10,6 +11,7 @@
 *.zip binary
 data/*/knowledge-battery.csv -text
 *.sav binary
+*.por binary
 *.parquet binary
 data/northern-ireland-2007/groups.csv -text
 data/*/codebook.txt -text
@@ -23,6 +25,8 @@ data/*/briefing-materials/** -text -whitespace
 data/*/papers/** -text -whitespace
 data/*/reports/** -text -whitespace
 data/*/design/** -text -whitespace
+data/*/scripts/** -text -whitespace
 data/*/other/** -text -whitespace
 data/celaya-2018/celaya.csv -text -whitespace
 data/shizuoka-2019/shizuoka.tsv -text -whitespace
+data/*/source-materials/** -text -whitespace

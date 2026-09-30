@@ -1,3 +1,4 @@
+source(file.path(root, "R", "respondent_parity.R"))
 source(file.path(root, "R", "respondents.R"))
 source(file.path(root, "R", "respondent_nic2.R"))
 source(file.path(root, "R", "polardata_derived.R"))
@@ -136,7 +137,7 @@ test_that("NIC2 uses raw questions and stable identities", {
   )
 })
 
-test_that("NIC2 matches all historical respondent and aggregate values", {
+test_that("NIC2 matches historical and approved aggregate values", {
   survey <- haven::read_dta(project_path("data", "nic2-2003", "survey.dta"))
   survey$source_row <- seq_len(nrow(survey))
   bridge <- readr::read_csv(
@@ -162,9 +163,9 @@ test_that("NIC2 matches all historical respondent and aggregate values", {
     "minority" = "minority",
     "educ4" = "education_four",
     "educ3" = "education_three",
-    "bettered" = "higher_education",
+
     "hhincome" = "household_income",
-    "highinc" = "high_income",
+
     "t1polint" = "political_interest_t1",
     "attextreme" = "attitude_extremity",
     "attextreme2" = "attitude_extremity_midterm",
@@ -209,12 +210,19 @@ test_that("NIC2 matches all historical respondent and aggregate values", {
       tolerance = 1e-10, info = field
     )
   }
+  values$highinc <- above_reference_median(values$hhincome, values$hhincome)
   result <- build_nic2_derived(survey, values)
   for (field in names(result)) {
+    if (field %in% c("entropy", "phighinc", "genvar")) {
+      reference[[field]] <- approved_reference_values(
+        "nic2-2003", field, reference$caseid, reference[[field]]
+      )
+    }
     expect_equal(result[[field]], as.numeric(reference[[field]]),
       tolerance = 1e-10, info = field
     )
   }
+  expect_equal(sum(is.na(result$genvar)), 95L)
   order <- rev(seq_len(nrow(survey)))
   expect_equal(build_nic2_derived(survey[order, ], values), result)
   order <- rev(seq_len(nrow(values)))

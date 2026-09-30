@@ -4,6 +4,13 @@ This repository is the source catalog and build system for data shared across
 Deliberative Poll research projects. It separates immutable source files from
 documented transformations and versioned exports.
 
+The [canonical analysis tables](docs/analysis-tables.md) provide a typed
+Parquet handoff: one poll registry, one knowledge-item catalog, keyed
+participant records, long item-wave answers, respondent-wave scores, and
+source-linked event timing. They cover every poll with available respondent
+data, including the control groups and the score-only exceptions. Downstream
+projects join and filter these tables for their own analyses.
+
 The repository establishes provenance before changing any analysis:
 
 - public replication deposits are stored byte-for-byte with checksums;
@@ -19,7 +26,10 @@ The repository establishes provenance before changing any analysis:
 `metadata/oos_sources.csv` locates the 24 frozen public inputs and supporting
 documents used by the dp-distortions out-of-sample study. It retains original
 URLs, access dates and SHA-256 hashes; shared files have one physical copy under
-`data/<study>/`. Study-specific recoding and estimation remain downstream.
+`data/<study>/`. Data recoding belongs in dp-data; downstream repositories
+consume versioned variables and perform estimation. Existing downstream
+recodes, including those in the out-of-sample study, still need migration with
+explicit value comparisons; see the [migration inventory](docs/poll-issues.md#x-11-data-recoding-belongs-upstream-not-in-downstream-readers).
 Blank source license fields mean no license was recorded during this migration;
 they do not assign the repository license to third-party materials.
 
@@ -34,8 +44,11 @@ missing values. Group membership is available for 6,147 participants.
 The [build notes](docs/knowledge-build.md) describe the output contract.
 The [fourteen-poll audit](docs/remaining-polls.md) explains corrected scores,
 three unresolved sample-size differences, Europolis's unordered match, and
-Vermont's ambiguous answer key. These outputs do not yet rebuild the full
-attitude aggregate or the control-arm batteries.
+Vermont's ambiguous answer key. The unified analysis export also includes
+the available control-arm item answers. Tanzania retains a released knowledge
+index and nine scored components; its original raw item responses have not been
+recovered. The canonical handoff remains score-only. The approved correction
+treats -99 component codes as missing and rebuilds the existing standardized index.
 
 The historical knowledge–attitude linkage is also built here with `make linkage`.
 Its five CSV products and checksum manifest live in `output/linkage/`, replacing
@@ -45,30 +58,65 @@ links for now; see the [linkage contract](docs/knowledge-build.md#historical-kno
 Known measurement, sample, linkage, and provenance questions are collected in the
 [poll-level issue register](docs/poll-issues.md). It distinguishes documented
 choices from unresolved concerns and existing upstream differences; this review
-preserves current scores pending instrument-level verification.
+preserves scores until instrument-level verification and poll-specific approval.
 
 `make respondents` reconstructs all 848 historical respondent-field targets
 across 21 polls. It retains every reviewed source record, separates named
 samples from people, and records versioned recodes and their raw inputs.
+It also exports `output/respondent/historical_knowledge_items.parquet`, with
+respondent-linked item correctness at both scoring waves for all 21 polls.
+The item means reproduce the corresponding reviewed respondent scores. Marousi
+is outside this 21-poll reconstruction; its separately retained original survey
+and authored correctness flags support the phase scores and raw seven-item
+responses in `analysis_phase_item_responses.parquet`, described in the issue register.
+The respondent export also includes `output/respondent/briefing_reading.parquet`:
+source-linked reading reports in nine polls, including five whose historical
+`readbrief` column was left missing even though the retained survey contains
+the response. The export preserves the raw survey code and a documented
+zero-to-one ordinal score.
 `make polardata` then computes group and poll summaries and exports the full
-6,084-row, 364-column historical schema under `output/polardata/`, together
+5,869-row, 364-column export under `output/polardata/`, together
 with the 129-row attitude-index catalog and a typed derived-measure table.
-The historical Primaries export contains two copies of each of 217 people;
-canonical respondent tables retain one record per person.
+Tomorrow's Europe also has explicit pre-arrival-to-exit and arrival-to-exit
+pairs in `output/polardata/attitude_contrasts.parquet`.
+
+`make weights` preserves the 13 supplied weight columns from nine polls under
+`output/weights/`. Definitions retain source provenance and documented scope;
+values retain every source row, including missing and zero weights. These tables
+preserve available weights without deciding how analyses should use them.
+
+`make tanzania-attitudes` exports the 22 reviewed policy questions and their
+source responses under `output/tanzania_attitudes/`. The tables preserve raw
+answers, five-category borrowing responses, discussion-round assignments and
+verified pre-arrival/follow-up timing. Citizen responses receive the documented
+zero-to-one scales; elite and moderator source rows remain available without
+applying the citizen coding or interview phases.
+
+The frozen historical benchmark contains two copies of each of 217 Primaries
+people; the maintained wide export and canonical tables retain one record per
+person. Two BTP General Election respondents with observed, entirely incorrect
+exit quizzes are restored under the approved questionnaire-presence rule.
 
 The build reads public poll sources, not frozen aggregates or the vault.
 `make compare-respondents` and `make compare-polardata` separately test against
 historical benchmarks. Documented numerical exceptions concern generalized
-variance in 24 groups; the comparison checks the exact source matrices and
+variance in 23 groups; the comparison checks the exact source matrices and
 numerical diagnostics before accepting those differences. Export row numbers
-are regenerated. See the [parity report](audit/polardata_parity.csv),
+are regenerated. The approved UK Crime correction replaces a baseline police
+item with the post-wave children item. UK Election 1997 now uses the post-wave
+Labour minimum-wage placement in post knowledge and its dependent measures.
+NIC 1996 age now uses `96 - BYEAR`, and its event mode is in person; raw
+birth-year anomalies remain recorded for separate review.
+Comparisons verify each approved value
+against the reviewed respondent-level evidence and reject unexplained changes.
+See the [parity report](audit/polardata_parity.csv),
 [covariance audit](audit/polardata_covariances.csv), and
 [poll issue register](docs/poll-issues.md) for details.
 
-Historical coding choices are preserved for later review. Existing knowledge
-and linkage products remain unchanged, and downstream repositories remain
-pinned to their existing inputs. The new reconstruction is a separate output
-that can be assessed before downstream adoption.
+Other historical coding choices are preserved for later review. The canonical
+analysis tables keep overlapping source batteries distinct through
+`source_dataset`, so downstream projects can select the reviewed source they
+need without implying respondent links that the data do not establish.
 
 ## Reproduce
 
@@ -105,10 +153,18 @@ verbatim responses and records the original source hash in the artifact catalog.
 | `evidence/benchmarks/` | Frozen published aggregates for comparisons and historical linkage |
 | `evidence/deposits/` | Immutable public deposits awaiting poll-level extraction |
 | `metadata/` | Poll registry, source catalog, aliases, recodes, export contracts |
+| `metadata/items.csv` | Canonical knowledge-question catalog for the historical, Cor--Sood, and control-poll batteries; see [item catalog guide](docs/items.md) |
 | `datapackage.json` | Frictionless schemas for the tabular metadata |
 | `R/`, `scripts/` | Validation and build code |
 | `output/` | Typed Parquet products built from audited poll-level inputs |
 | `vault/` | Ignored local source archive, including restricted files |
+
+Flat metadata registries remain CSV and are validated against the JSON schemas
+in `datapackage.json`. Nested poll metadata is generated as JSON from those
+registries. Analysis products use typed Parquet; `metadata/canonical_columns.csv`
+defines each field’s type, nullability, key membership and meaning. Audit cell
+comparisons with many repeated rows can also use Parquet, with their keys and
+value semantics documented in the poll issue ledger.
 
 The architecture and migration order are documented in
 [`docs/architecture.md`](docs/architecture.md).
@@ -118,11 +174,32 @@ The architecture and migration order are documented in
 maintained twice. A blank `poll_id` denotes a collection-wide artifact rather
 than an unknown poll. Source materials live in the relevant poll's
 `questionnaires/`, `codebooks/`, `briefing-materials/`, `papers/`, `reports/`, or
-`design/` directory. Cross-poll references and historical definition versions
+`design/` directory. Cross-poll references and definition versions with distinct coding evidence
 have one copy under `data/shared/`; poll manifests point to that same file.
 Original archive paths, download URLs, checksums, and comparison limitations are
-recorded in the central catalog. Identical copies are consolidated; different
-versions remain separate.
+recorded in the central catalog. Redundant copies and superseded drafts are removed after comparing their
+contents, including comments and coding notes. Git retains removed versions.
+Documents tied to one event live in its own folder. Entries whose `collection`
+is `materials-only` identify reference materials without claiming that respondent
+data or an aggregate build is available.
+
+Each poll folder also contains generated `metadata.json`: the historical catalog
+entry, sourced event facts, references, material coverage, and links to local
+originals and PDF previews. `metadata/poll_facts.csv` retains conflicting claims
+with source locators; it does not revise historical identifiers or scoring.
+`metadata/poll_references.csv` distinguishes research papers from press releases,
+event reports, instruments, and briefing materials. Coverage in
+`metadata/poll_material_coverage.csv` records what was located and what remains
+missing among the sources checked. Run `make manifests` to refresh these views.
+
+Office documents retain their originals alongside PDF previews registered in
+`metadata/document_previews.csv`. Preview generation requires LibreOffice,
+Poppler (`pdfinfo` and `pdftotext`), and `openpyxl` for workbooks. Install the Python
+dependency in your environment with `python3 -m pip install openpyxl`, then run
+`make previews`. The converter adjusts print layout in temporary workbook copies.
+It checks registered hashes and skips unchanged pairs; ordinary `make check`
+validates existing previews without regenerating PDFs. Preview conversion is for
+reading source documentation and does not feed numerical builds.
 
 `LICENSE` covers this repository's code. Data retain the license recorded for
 each input in `metadata/source_files.csv`. Reference materials retain their
@@ -132,11 +209,12 @@ Restricted respondent files remain in the local vault. Exact historical CDD scri
 in Git history under the `historical-cdd-scripts` tag, not beside the maintained
 pipeline on `main`.
 
-The aggregate `polardata` and attitude-index files are validation targets, not
-inputs to the canonical build. Canonical long tables will be assembled from
-audited poll-level respondent, item, wave, group, and artifact records. Their
-released form can be typed Parquet, with small dictionaries and manifests kept
-as CSV for inspection and joins.
+The frozen aggregate `polardata` and attitude-index files are validation targets.
+The current aggregates are rebuilt from poll-level sources with approved
+corrections. Canonical respondent, item, wave, group, and score tables are
+released as typed Parquet. Small flat dictionaries and manifests remain CSV
+for inspection and joins; nested poll metadata uses JSON. Schema definitions
+validate types, required values, and keys before writing the Parquet files.
 
 ## Cor–Sood knowledge batteries
 
@@ -151,8 +229,13 @@ These files contain scored 0/1 item responses and `female`, but no original
 answer choices, respondent IDs, group assignments, or attitudes. A row number
 is only an index within that deposited CSV. The files can reproduce the
 knowledge-battery analysis; they cannot by themselves regenerate
-`polardata` or establish a respondent-level join to it. The original CDD
-survey files and scripts in the local vault must be audited poll by poll
-before the full aggregate is rebuilt. Published aggregates in
+`polardata` or establish a respondent-level join to it. The retained poll-level
+survey files and original coding evidence supply that linkage; the issue
+register records remaining source gaps. Published aggregates in
 `evidence/benchmarks/` remain comparison targets for the canonical build and
 explicit inputs to the historical linkage build.
+
+The canonical item table supplies `question_display`, `answer_choices_display`, and
+`correct_answer_display` for publications. These normalize all-capital source labels
+to sentence case, with reviewed proper names and abbreviation expansions; original
+text and scoring codes remain in their existing fields.

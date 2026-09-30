@@ -27,7 +27,7 @@ test_that("redacted extracts expose only the reviewed text fields", {
     strings <- names(survey)[purrr::map_lgl(survey, is.character)]
     allowed <- switch(record$poll_id,
       "btp-2007" = "Sgroup",
-      "michigan-2009" = paste0("t3q", 38:42),
+      "michigan-2009" = paste0("t3q", c(38:42, 45:46)),
       "nic2-2003" = c("stcd", "time", "qstcd"),
       "btp-presidential-primaries-2004" = c(
         "b1q38", "f1q49a", "f1q49b", "f1q49c", "f1q49d"
@@ -90,7 +90,7 @@ test_that("Michigan written answers preserve nonresponse and original text", {
   )
 })
 
-test_that("Vermont follows the key including its dual-answer ambiguity", {
+test_that("Vermont follows the approved final-report renewables key", {
   built <- build_poll_knowledge("vermont-energy-2007")
   r <- built$knowledge_responses
   efficiency <- r |> dplyr::filter(
@@ -103,15 +103,23 @@ test_that("Vermont follows the key including its dual-answer ambiguity", {
     .data$response_status == "answered"
   )
   expect_equal(
-    renewables$correct, as.integer(renewables$raw_value %in% c(2, 3))
+    renewables$correct, as.integer(renewables$raw_value == 3)
   )
+  for (wave in 1:2) {
+    answers <- renewables[renewables$wave == wave, ]
+    expected <- if (wave == 1L) 16L else 41L
+    expect_equal(sum(answers$correct), expected)
+    expect_true(all(answers$correct[answers$raw_value == 2] == 0L))
+  }
   expect_equal(nrow(built$groups), 0L)
   expect_equal(nrow(built$respondents), 146L)
 })
 
 test_that("Denmark joins independent wave files without expanding records", {
   source <- read_poll_survey("denmark-euro-2000")
-  departure <- read_public_survey(read_metadata("survey_components"))
+  component <- read_metadata("survey_components") |>
+    dplyr::filter(source_id == "cdd-denmark-euro-2000-departure")
+  departure <- read_public_survey(component)
   built <- build_poll_knowledge("denmark-euro-2000")
   expect_equal(nrow(source), 1702L)
   expect_equal(nrow(departure), 359L)
@@ -129,11 +137,36 @@ test_that("Denmark joins independent wave files without expanding records", {
   expect_equal(nrow(built$memberships), 0L)
 })
 
+test_that("Denmark arrival preserves raw answers and linking IDs", {
+  component <- read_metadata("survey_components") |>
+    dplyr::filter(.data$source_id == "cdd-denmark-euro-2000-arrival")
+  expect_equal(nrow(component), 1L)
+  expected_hash <- paste0(
+    "0bf7c28c4bc93c80e62244ec02b3764ba15e",
+    "735684d4cebefc7eace2b67deeb9"
+  )
+  expect_identical(
+    digest::digest(file = project_path(component$public_path), algo = "sha256"),
+    expected_hash
+  )
+  arrival <- read_public_survey(component)
+  expect_equal(nrow(arrival), 363L)
+  expect_equal(ncol(arrival), 94L)
+  expect_false(anyNA(arrival$DELNR))
+  expect_equal(anyDuplicated(arrival$DELNR), 0L)
+  fields <- c(
+    paste0("S", 4:9, "_1"),
+    "S11_7_1", "S11_9_1", "S11_11_1"
+  )
+  expect_true(all(fields %in% names(arrival)))
+  expect_identical(dictionary_prefix(component), "arrival-")
+  original <- read_archive_survey(component)
+  expect_identical(arrival[names(original)], original)
+})
+
 test_that("sample differences and unordered comparisons do not invent links", {
   purrr::walk(
-    c(
-      "denmark-euro-2000", "california-whats-next-2011", "tomorrows-europe-2007"
-    ),
+    c("denmark-euro-2000", "tomorrows-europe-2007"),
     function(poll_id) {
       comparison <- compare_knowledge_batteries(build_poll_knowledge(poll_id))
       expect_identical(
@@ -144,6 +177,26 @@ test_that("sample differences and unordered comparisons do not invent links", {
       expect_equal(nrow(comparison$score_changes), 0L)
     }
   )
+  california <- read_knowledge_battery("california-whats-next-2011")
+  expect_equal(nrow(california), 401L)
+  expect_true(all(rowSums(!is.na(california[397:401, ])) == 0L))
+  comparison <- compare_knowledge_batteries(
+    build_poll_knowledge("california-whats-next-2011")
+  )
+  expect_identical(
+    comparison$summary$comparison_status, "row-aligned-after-blank-tail"
+  )
+  expect_equal(comparison$summary$respondents, 396L)
+  expect_equal(comparison$summary$benchmark_respondents, 401L)
+  expect_equal(comparison$summary$item_differences, 2L)
+  expect_equal(comparison$summary$female_differences, 0L)
+  expect_setequal(comparison$differences$respondent_id, c("321", "438"))
+  expect_true(all(comparison$differences$source_column == "t3q27"))
+  expect_true(all(comparison$differences$raw_value == 3))
+  expect_true(all(is.na(comparison$differences$deposited_correct)))
+  expect_true(all(comparison$differences$correct == 0L))
+  expect_true(all(comparison$score_changes$changed_scores == 0L))
+
   built <- build_poll_knowledge("europolis-2009")
   comparison <- compare_knowledge_batteries(built)
   expect_identical(
@@ -157,6 +210,42 @@ test_that("sample differences and unordered comparisons do not invent links", {
     compare_knowledge_batteries(built)$summary$comparison_status,
     "unordered-different"
   )
+})
+
+test_that("California eight-item scores exclude departure nonparticipants", {
+  survey <- read_poll_survey("california-whats-next-2011")
+  excluded <- is.na(survey$part) & !is.na(survey$t2_ParticipantNumber)
+  expect_equal(sum(excluded), 5L)
+  expect_false(any(california_wave_present(survey[excluded, ], 3L)))
+  built <- build_california_knowledge(survey)
+  responses <- built$california_knowledge_responses
+  scores <- built$california_knowledge_scores
+  expect_equal(nrow(scores), 824L)
+  expect_equal(nrow(responses), 6592L)
+  invalid <- responses$source_column == "t3q33" & responses$raw_code %in% 0
+  expect_equal(sum(invalid), 1L)
+  expect_true(all(is.na(responses$correct[invalid])))
+  expect_false(any(scores$source_row %in% survey$source_row[excluded]))
+  expect_equal(sum(!scores$wave_present), 16L)
+  expect_true(all(is.na(scores$score_zero_filled[!scores$wave_present])))
+  expect_true(all(is.na(responses$correct[!responses$wave_present])))
+  expect_equal(sum(scores$paired), 792L)
+  paired <- scores[scores$paired, ]
+  arrival <- paired$score_zero_filled[paired$wave == 2L]
+  departure <- paired$score_zero_filled[paired$wave == 3L]
+  expect_equal(round(mean(arrival) * 100, 1), 60.0)
+  expect_equal(round(mean(departure) * 100, 1), 76.7)
+  expect_true(all(scores$n_items == 8L))
+  report <- audit_california_report(survey)
+  expect_true(all(report$denominator == 417L))
+  expect_true(all(report$nonparticipants == 5L))
+  expect_equal(report$n_correct[report$wave == 2L],
+               c(316L, 290L, 258L, 253L, 263L, 259L, 128L, 150L))
+  expect_equal(report$n_correct[report$wave == 3L],
+               c(355L, 334L, 339L, 362L, 292L, 330L, 206L, 307L))
+  expect_equal(nrow(build_poll_knowledge(
+    "california-whats-next-2011"
+  )$respondents), 396L)
 })
 
 test_that("NIC keeps missing IDs and rejects substantive numeric drift", {

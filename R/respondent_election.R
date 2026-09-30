@@ -2,13 +2,11 @@ election_attitudes <- function(survey, wave) {
   stems <- c(redistribution = "redstr", tax = "taxr",
     minimum_wage = "wager", european_union = "eur"
   )
-  indices <- purrr::imap(stems, function(stem, name) {
-    # UKGE-02: post tax measures retrospective taxes, not spending preferences.
-    field <- if (name == "tax" && wave == 2L) "taxret2"
-    else paste0(stem, wave)
-    values <- if (field == "taxret2") c(0, .25, .5, .75, 1)
-    else c(0, .17, .33, .5, .67, .83, 1)
-    recode_source_values(survey, field, values, missing = c(-9, -8)) |>
+  indices <- purrr::map(stems, function(stem) {
+    field <- paste0(stem, wave)
+    recode_source_values(survey, field,
+      c(0, .17, .33, .5, .67, .83, 1), missing = c(-9, -8)
+    ) |>
       as_historical_float()
   })
   tibble::as_tibble(indices) |>
@@ -24,10 +22,7 @@ election_knowledge_items <- function(survey, wave) {
   placements <- purrr::map(c("c", "l", "ld"), function(party) {
     stems <- c("redst", "tax", "wage", "eu")
     items <- purrr::map(stems, function(stem) {
-      # UKGE-03: retain the baseline Labour wage item in the post-wave score.
-      source_wave <- if (wave == 2L && party == "l" && stem == "wage") 1L
-      else wave
-      field <- paste0(stem, party, source_wave)
+      field <- paste0(stem, party, wave)
       value <- read_source_codes(survey, field, c(-9, -8, 1:7))
       correct <- if (party == "c") value %in% 1:3 else value %in% 5:7
       as.numeric(correct)
@@ -59,9 +54,9 @@ election_demographics <- function(survey) {
     age = dplyr::na_if(age, -7),
     education_four = education,
     education_three = collapse_historical_education(education),
-    higher_education = as.numeric(education >= .33),
+
     household_income = income,
-    high_income = as.numeric(income > 2),
+
     political_interest_t1 = recode_source_values(survey, "int1",
       c(0, .33, .66, 1, 1), c(-9, -8)
     )

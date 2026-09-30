@@ -95,6 +95,20 @@ source is not a claim that its respondent recodes are finished.
 | `respondent_measures` | One person and versioned definition; value and input-field counts |
 | `respondent_memberships` | One documented person/session/group membership; absence does not establish control status |
 
+The [harmonized ordinal rules](../metadata/harmonized_ordinal_measures.csv)
+add `political_interest_t1_harmonized` to `respondent_measures` for nine polls
+with an observed baseline interest question. Each rule reads the raw answer,
+maps the least interested category to 0 and the most interested to 1, and
+spaces intermediate categories evenly. Listed non-substantive codes and system
+missingness remain missing; unexpected codes stop the build. These rules do
+not change historical `t1polint` or `polardata`. Their explicitly listed
+nonanswers are also marked `non-substantive` in `source_responses`. A common
+direction and range
+make the measure interpretable across polls, but different question wording
+and category counts do not imply equal measurement precision. Within-poll
+z-scores would require a separately named definition and an explicit reference
+sample; they are not applied here.
+
 These exports retain **all rows** of the reviewed sources in scope. A missing or
 nonunique source ID gets a file-scoped source-row identifier, with its basis
 recorded. This identifies a source record, not a resolved identity across files.
@@ -156,8 +170,25 @@ unique source person, legacy field and definition version. Person-level keys
 are needed because peer means and normalized gains can differ within a group.
 Its status column identifies missing and infinite historical results.
 
-The wide export preserves the two copies of each of 217 Primaries respondents;
-the canonical tables do not duplicate people. `X` is a regenerated export row
+The [derived measure names](../metadata/derived_measure_names.csv) map all
+31 historical group and poll fields to snake_case names with explicit
+`group_` or `poll_` prefixes. `aggregation_level` gives the calculation level;
+`respondent_scope` distinguishes group summaries that include the respondent,
+leave-one-out formulas, respondent-specific gains, and poll samples. For
+example, historical `meanage` is `group_mean_age`; it is calculated here from
+respondent `age`, after the poll recode, and is never a respondent recode.
+The historical field remains alongside the new name for value comparisons.
+The observed-peer female share uses the number of other members with known
+gender, and remains computable when only the focal person's gender is missing.
+The separately preserved historical peer-knowledge formulas can still use
+historical group-size conventions; each definition records its denominator.
+An observed-peer mean describes those observed peers. Interpreting it as a mean
+for all peers requires an additional assumption about the missing responses.
+
+The historical benchmark contains two copies of each of 217 Primaries respondents;
+the maintained wide export and canonical tables do not duplicate people.
+The current wide export has 5,869 unique poll/person records, including the two
+approved BTP General Election inclusions. `X` is a regenerated export row
 number, not an identity. Comparisons join on poll and historical respondent ID
 and require duplicated historical records to agree in every other column.
 The twelve absent Greek attitude columns remain missing.
@@ -168,6 +199,14 @@ an unchanged source matrix fingerprint and a near-singular covariance with both
 values inside the diagnostic perturbation envelope. The audit distinguishes
 indefinite covariances from ordinary singularity. Changes outside these checks
 fail comparison; benchmark values are never copied into reconstructed outputs.
+
+Generalized variance is missing when the pairwise covariance matrix has a
+materially negative eigenvalue. The shared calculation and audit use the same
+scale-relative numerical tolerance; valid singular matrices retain the existing
+arithmetic. This rule does not impute answers or substitute a complete-case
+covariance. The separate average within-group attitude SD remains available.
+The definition version is `covariance-validity-v2`; case-level approved changes
+are documented in `docs/poll-issues.md` X-15.
 
 ## Migration order
 
@@ -211,3 +250,55 @@ continues to evolve.
 
 Poll implementations can proceed independently. Shared registries, exports, and
 release gates are integrated centrally to avoid conflicting edits.
+
+## Identified knowledge responses
+
+`make respondents` also builds `output/respondent/respondent_knowledge.parquet`
+from the poll sources, existing canonical item definitions and the `people`
+identity table. It joins on poll and source row, asserts a unique person per
+source record, and exports canonical and historical respondent IDs with each
+item/wave. Anonymous battery row order is not a downstream identity contract.
+
+`correct` preserves missingness and `response_status` preserves its meaning.
+`correct_zero_filled` explicitly counts missing correctness as zero for the
+existing fixed-denominator scoring convention. Consumers choose that defined
+field instead of silently replacing missing responses themselves. This export
+does not create new answer keys or change sample membership. It covers the
+intersection of reconstructed source-person polls and existing knowledge builds.
+
+California 2011 also has an eight-question arrival/departure participant
+measure. `make knowledge` exports `output/california_knowledge_responses.parquet`
+and `output/california_knowledge_scores.parquet`; the wording and keys are in
+`metadata/california_knowledge_items.csv`. The 412 flagged participants are
+included, with absent questionnaires left missing and a `paired` flag for the
+396 with both questionnaires. Item nonresponse within an observed questionnaire
+is scored zero using the fixed eight-item denominator. Five arrival-only
+nonparticipants are excluded. `audit/california_report_reproduction.csv`
+explains the published table's 417-record denominator, including those five;
+it is an audit of the report rather than a participant measure. The historical
+five-item phone/departure series remains unchanged; see `poll-issues.md` CA-03.
+
+The canonical battery is not necessarily the historical aggregate battery:
+NIC, for example, has distinct eight-item and eleven-item definitions. Before
+linking a new poll to an analysis, verify identities, sample and battery definition.
+For dp-learning's eight T1-linked polls, every item cell matches the existing
+battery; joining by historical respondent ID resolves San Mateo's changed row
+order without changing any scores.
+
+### Participant covariates
+
+`analysis_participants.parquet` carries age, three-category schooling, BA status,
+and briefing-reading reports alongside the response keys. Historical age, schooling,
+minority status, and attitude extremity come from the rebuilt participant records.
+Seven additional polls supply age and schooling from their own source surveys;
+`metadata/recode_ledger.csv` records the fields and category mappings. BTP 2007 age
+is survey year minus birth year. Other/missing qualifications remain missing.
+
+Reading reports describe reading before discussion, elicited afterward. BTP 2007,
+California 2011, and Michigan 2009 supplement the nine historical sources. Michigan's
+letter-coded reading fields are retained as categorical source answers; they are
+not free-text responses. Unrecognized codes remain missing. The original source
+columns are preserved in each poll's survey export.
+
+Covariates join on poll, source dataset, and respondent ID; source-row joins are
+validated within each poll. Overlapping batteries retain their distinct keys.

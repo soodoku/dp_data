@@ -1,7 +1,7 @@
-read_metadata <- function(name) {
+read_metadata <- function(name, na = c("", "NA")) {
   readr::read_csv(
     project_path("metadata", paste0(name, ".csv")),
-    show_col_types = FALSE
+    show_col_types = FALSE, na = na
   )
 }
 
@@ -16,6 +16,18 @@ validate_metadata <- function() {
   sources <- read_metadata("source_files")
   recodes <- read_metadata("recode_ledger")
   contracts <- read_metadata("downstream_contracts")
+  knowledge_codes <- read_metadata("knowledge_response_codes", na = "")
+  stopifnot(
+    !anyDuplicated(knowledge_codes[c("poll_id", "source_column", "code")]),
+    all(knowledge_codes$poll_id %in% polls$poll_id),
+    !anyNA(knowledge_codes[c(
+      "poll_id", "source_column", "code", "evidence"
+    )]),
+    all(!is.na(knowledge_codes$label) |
+          knowledge_codes$response_reason %in% "invalid_response"),
+    all(is.na(knowledge_codes$response_reason) |
+          knowledge_codes$response_reason %in% "invalid_response")
+  )
 
   assertr::verify(
     polls,
@@ -81,7 +93,7 @@ validate_metadata <- function() {
     canonical_columns,
     all(
       .data$arrow_type %in%
-        c("bool", "float64", "int32", "string")
+        c("bool", "date32", "float64", "int32", "string")
     ),
     error_fun = assertr::error_stop
   )
@@ -169,6 +181,7 @@ validate_metadata <- function() {
     all(oos$path == sources$path[source_rows]),
     all(oos$sha256 == sources$sha256[source_rows])
   )
+  validate_poll_documentation()
   validate_respondent_metadata()
   invisible(TRUE)
 }
@@ -179,13 +192,18 @@ validate_respondent_metadata <- function() {
   surveys <- read_metadata("survey_sources")
   fields <- read_metadata("polardata_fields")
   targets <- read_metadata("polardata_targets")
+  derived_names <- read_metadata("derived_measure_names")
   definitions <- read_metadata("measure_definitions")
   inputs <- read_metadata("measure_inputs")
+  harmonized <- read_metadata("harmonized_ordinal_measures")
   reviewed <- contracts[contracts$status == "reviewed-source", ]
   defined <- paste(definitions$poll_id, definitions$definition_id)
   dependencies <- paste(inputs$poll_id, inputs$definition_id)
   implemented <- targets[targets$status == "implemented", ]
   constant <- definitions$scoring_rule == "historical-constant-missing"
+  expected_derived <- fields$legacy_field[
+    fields$layer %in% c("group-derived", "poll-derived")
+  ]
   stopifnot(
     !anyDuplicated(contracts$poll_id), !anyDuplicated(contracts$dpnum),
     setequal(contracts$dpnum, 1:21),
@@ -193,6 +211,19 @@ validate_respondent_metadata <- function() {
     all(paste(reviewed$poll_id, reviewed$source_id) %in%
           paste(surveys$poll_id, surveys$source_id)),
     !anyDuplicated(fields$legacy_field),
+    setequal(derived_names$legacy_field, expected_derived),
+    !anyDuplicated(derived_names$legacy_field),
+    !anyDuplicated(derived_names$measure_name),
+    all(grepl("^[a-z][a-z0-9]*(_[a-z0-9]+)*$",
+              derived_names$measure_name)),
+    all(derived_names$aggregation_level %in% c("group", "poll")),
+    all(derived_names$respondent_scope %in%
+          c("group_members", "leave_one_out", "respondent_specific",
+            "poll_sample")),
+    all(startsWith(derived_names$measure_name,
+                   paste0(derived_names$aggregation_level, "_"))),
+    all(derived_names$aggregation_level == "group" |
+          derived_names$respondent_scope == "poll_sample"),
     all(fields$layer %in% c("identifier", "export-artifact", "respondent",
           "group-derived", "poll-derived", "poll-metadata"
         )),
@@ -208,6 +239,24 @@ validate_respondent_metadata <- function() {
     all(definitions$poll_id %in% reviewed$poll_id),
     all(dependencies %in% defined),
     setequal(defined[!constant], dependencies),
+    !anyDuplicated(harmonized[c("poll_id", "definition_id")]),
+    !anyDuplicated(harmonized[c("poll_id", "source_column")]),
+    setequal(
+      paste(harmonized$poll_id, harmonized$definition_id),
+      defined[grepl("_harmonized$", definitions$measure_id)]
+    ),
+    all(harmonized$measure_id == definitions$measure_id[
+      match(paste(harmonized$poll_id, harmonized$definition_id), defined)
+    ]),
+    all(harmonized$poll_id %in% reviewed$poll_id),
+    all(paste(harmonized$poll_id, harmonized$definition_id,
+              harmonized$source_column) %in%
+          paste(inputs$poll_id, inputs$definition_id,
+                inputs$source_column)),
+    all(harmonized$min_code < harmonized$max_code),
+    all(harmonized$high_code == harmonized$min_code |
+          harmonized$high_code == harmonized$max_code),
+    all(!is.na(harmonized$evidence)),
     all(paste(implemented$poll_id, implemented$canonical_definition) %in%
           defined),
     all(!is.na(targets$blocker[targets$status != "implemented"])),
@@ -216,5 +265,154 @@ validate_respondent_metadata <- function() {
     all(!is.na(definitions$denominator_policy)),
     all(definitions$post_dependent == grepl("T2|T3", definitions$source_waves))
   )
+  imputed <- definitions[grepl("_midpoint_imputed$", definitions$measure_id), ]
+  plain_names <- sub("_midpoint_imputed$", "", imputed$measure_id)
+  plain_position <- match(
+    paste(imputed$poll_id, plain_names),
+    paste(definitions$poll_id, definitions$measure_id)
+  )
+  stopifnot(!anyNA(plain_position))
+  for (i in seq_len(nrow(imputed))) {
+    plain <- definitions[plain_position[i], ]
+    dependency_fields <- function(definition) {
+      inputs$source_column[
+        inputs$poll_id == definition$poll_id &
+          inputs$definition_id == definition$definition_id
+      ]
+    }
+    stopifnot(
+      grepl("^[a-z][a-z0-9]*(_[a-z0-9]+)*$", imputed$measure_id[i]),
+      identical(imputed$source_waves[i], plain$source_waves),
+      identical(imputed$post_dependent[i], plain$post_dependent),
+      setequal(dependency_fields(imputed[i, ]), dependency_fields(plain))
+    )
+  }
   invisible(TRUE)
+}
+
+read_documentation <- function(name) {
+  readr::read_csv(
+    project_path("metadata", paste0(name, ".csv")),
+    col_types = readr::cols(.default = readr::col_character())
+  )
+}
+
+validate_poll_documentation <- function(
+  references = read_documentation("poll_references"),
+  facts = read_documentation("poll_facts"),
+  coverage = read_documentation("poll_material_coverage"),
+  previews = read_documentation("document_previews")) {
+  polls <- read_metadata("polls")$poll_id
+  artifacts <- read_metadata("artifacts")
+  required_materials <- c(
+    "questionnaires", "briefing-materials", "event-reports",
+    "papers", "codebooks"
+  )
+  reference_rows <- match(facts$reference_id, references$reference_id)
+  artifact_rows <- match(references$local_artifact_id, artifacts$artifact_id)
+  local <- !is.na(references$local_artifact_id)
+  stopifnot(
+    !anyNA(references$reference_id),
+    !anyDuplicated(references$reference_id),
+    all(references$poll_id %in% polls),
+    all(references$kind %in% read_metadata("artifact_types")$artifact_type),
+    all(!is.na(references$title)),
+    all(!is.na(references$url) | local),
+    all(is.na(references$url) | grepl("^https?://", references$url)),
+    all(!is.na(references$accessed)),
+    all(!is.na(artifact_rows[local])),
+    all(is.na(artifacts$poll_id[artifact_rows[local]]) |
+          artifacts$poll_id[artifact_rows[local]] == references$poll_id[local]),
+    all(facts$poll_id %in% polls),
+    all(facts$field %in% c(
+      "event_dates", "location", "organizers", "population", "recruitment",
+      "participants", "mode", "topics"
+    )),
+    !anyNA(reference_rows),
+    all(facts$poll_id == references$poll_id[reference_rows]),
+    all(!is.na(facts$field)), all(!is.na(facts$value)),
+    all(!is.na(facts$source_locator)),
+    all(facts$status %in% c("reported", "corroborated", "conflicting")),
+    !anyDuplicated(facts),
+    all(coverage$poll_id %in% polls),
+    all(coverage$material_type %in% required_materials),
+    !anyDuplicated(coverage[c("poll_id", "material_type")]),
+    setequal(
+      paste(coverage$poll_id, coverage$material_type),
+      as.vector(outer(polls, required_materials, paste))
+    ),
+    all(coverage$status %in%
+          c("available", "partial", "external-only", "not-found")),
+    all(!is.na(coverage$notes)),
+    !anyDuplicated(previews$source_path),
+    !anyDuplicated(previews$preview_path),
+    all(previews$source_path %in% artifacts$location),
+    all(previews$preview_path %in% artifacts$location),
+    all(grepl("\\.pdf$", previews$preview_path)),
+    all(as.integer(previews$pages) > 0L),
+    all(!is.na(previews$converter_version)),
+    all(!is.na(previews$text_check)), all(!is.na(previews$visual_check))
+  )
+  material_kinds <- list(
+    questionnaires = c("questionnaire", "codebook"),
+    `briefing-materials` = "briefing-material",
+    `event-reports` = c("event-report", "press-release"),
+    papers = "paper",
+    codebooks = "codebook"
+  )
+  purrr::walk(seq_len(nrow(coverage)), function(index) {
+    row <- coverage[index, ]
+    ids <- trimws(strsplit(row$checked_references, ";", fixed = TRUE)[[1]])
+    stopifnot(all(ids %in% references$reference_id[
+      references$poll_id == row$poll_id
+    ]))
+    if (row$status == "available") {
+      checked <- references[match(ids, references$reference_id), ]
+      published <- artifacts$artifact_id[
+        artifacts$publication_status == "published"
+      ]
+      stopifnot(any(
+        checked$kind %in% material_kinds[[row$material_type]] &
+          checked$local_artifact_id %in% published
+      ))
+    }
+  })
+  for (kind in c("source", "preview")) {
+    paths <- previews[[paste0(kind, "_path")]]
+    hashes <- purrr::map_chr(project_path(paths), digest::digest,
+      file = TRUE, algo = "sha256", serialize = FALSE
+    )
+    stopifnot(identical(hashes, previews[[paste0(kind, "_sha256")]]))
+  }
+  invisible(TRUE)
+}
+
+poll_documentation <- function(poll, artifacts, references, facts,
+                               coverage, previews) {
+  poll_id <- poll$poll_id[[1]]
+  reference_rows <- references[references$poll_id == poll_id, ]
+  artifact_rows <- artifacts |>
+    dplyr::filter(
+      .data$publication_status == "published",
+      .data$poll_id == .env$poll_id |
+        .data$artifact_id %in% reference_rows$local_artifact_id
+    )
+  artifact_rows$relative_path <- as.character(fs::path_rel(
+    project_path(artifact_rows$location), project_path("data", poll_id)
+  ))
+  preview_rows <- previews[previews$source_path %in% artifact_rows$location, ]
+  list(
+    catalog = as.list(poll[1, ]),
+    interpretation = paste(
+      "Catalog labels preserve historical identifiers.",
+      "Sourced facts retain reported definitions and disagreements;",
+      "they do not change respondent coding or aggregate outputs.",
+      "Material coverage describes the sources checked, not proof of absence."
+    ),
+    facts = facts[facts$poll_id == poll_id, ],
+    references = reference_rows,
+    material_coverage = coverage[coverage$poll_id == poll_id, ],
+    artifacts = artifact_rows,
+    document_previews = preview_rows
+  )
 }

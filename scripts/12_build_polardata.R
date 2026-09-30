@@ -8,6 +8,7 @@ source("R/exports.R")
 source("R/respondents.R")
 source("R/polardata.R")
 source("R/polardata_rebuild.R")
+source("R/attitude_catalog.R")
 
 contracts <- read_metadata("respondent_sources")
 stopifnot(nrow(contracts) == 21L, all(contracts$status == "reviewed-source"))
@@ -24,7 +25,7 @@ verify_source_files(manifest[required, ])
 polls <- purrr::map(contracts$poll_id, build_historical_poll) |>
   rlang::set_names(contracts$poll_id)
 rebuilt <- historical_wide_export(polls)
-stopifnot(nrow(rebuilt) == 6084L, ncol(rebuilt) == 364L)
+stopifnot(nrow(rebuilt) == 5869L, ncol(rebuilt) == 364L)
 directory <- project_path("output", "polardata")
 fs::dir_create(directory)
 path <- file.path(directory, "polardata.parquet")
@@ -32,7 +33,8 @@ arrow::write_parquet(rebuilt, path, compression = "zstd")
 stopifnot(identical(rebuilt, arrow::read_parquet(path)))
 readr::write_tsv(rebuilt, file.path(directory, "polardata.tab"), na = "")
 derived <- historical_derived_measures(polls)
-manifest <- write_typed_export(derived, "derived_measures", directory)
+manifest <- write_typed_export(derived, "derived_measures", directory,
+                               schema_version = "2")
 readr::write_csv(manifest, file.path(directory, "manifest.csv"))
 
 health <- build_health_polardata()
@@ -40,14 +42,11 @@ path <- file.path(directory, "uk-health-1998.parquet")
 arrow::write_parquet(health, path)
 stopifnot(identical(health, arrow::read_parquet(path)))
 
-indices <- readr::read_csv(project_path(
-  "data", "shared", "codebooks", "attitude_indices", "allpollindices.csv"
-), show_col_types = FALSE)
-stopifnot(
-  nrow(indices) == 129L, ncol(indices) == 7L,
-  all(indices$t1var %in% names(rebuilt)),
-  all(indices$t2_t3var %in% names(rebuilt))
-)
+indices <- build_attitude_catalog(rebuilt)
+contrasts <- reviewed_attitude_contrasts(indices)
+manifest <- dplyr::bind_rows(manifest, write_typed_export(
+  contrasts, "attitude_contrasts", directory
+))
 arrow::write_parquet(indices, file.path(directory, "attitude-indices.parquet"))
 readr::write_tsv(indices, file.path(directory, "attitude-indices.tab"), na = "")
 

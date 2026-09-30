@@ -8,6 +8,21 @@ tomorrows_europe_codes <- function(survey, field, allowed) {
   value
 }
 
+tomorrows_europe_age <- function(survey) {
+  age <- tomorrows_europe_codes(survey, "age", 18:120)
+  birth_year <- tomorrows_europe_codes(survey, "v_q36", 1900:2007)
+  age_band <- tomorrows_europe_codes(survey, "q36", 1:6)
+  observed <- !is.na(age)
+  stopifnot(
+    identical(is.na(age), is.na(birth_year)),
+    all(age[observed] == 2007 - birth_year[observed]),
+    all(as.integer(cut(age[observed], c(17, 24, 39, 54, 69, Inf))) ==
+          age_band[observed]),
+    all(age_band[!observed] == 6)
+  )
+  age
+}
+
 tomorrows_europe_mean <- function(...) {
   value <- rowMeans(cbind(...), na.rm = TRUE)
   value[is.nan(value)] <- NA_real_
@@ -15,8 +30,7 @@ tomorrows_europe_mean <- function(...) {
 }
 
 tomorrows_europe_attitudes <- function(survey, wave) {
-  item <- function(question, scale = 10, reverse = FALSE, source_wave = wave) {
-    wave <- source_wave
+  item <- function(question, scale = 10, reverse = FALSE) {
     field <- if (wave == 1L) paste0("q", question, "_1") else
       paste0("t", wave, "q", question)
     allowed <- if (wave == 1L) seq_len(scale + 3L) else
@@ -30,15 +44,13 @@ tomorrows_europe_attitudes <- function(survey, wave) {
     if (reverse) 1 - value else value
   }
   average <- function(
-    questions, scale = 10, reverse = FALSE, source_wave = wave) {
-    values <- purrr::map(questions, \(q) item(q, scale, reverse, source_wave))
+    questions, scale = 10, reverse = FALSE) {
+    values <- purrr::map(questions, \(q) item(q, scale, reverse))
     do.call(tomorrows_europe_mean, values)
   }
   military <- tomorrows_europe_mean(
     average(c("11a", "11c"), 5, TRUE),
-    average(paste0("12", letters[1:4]),
-      source_wave = if (wave == 3L) 2L else wave
-    )
+    average(paste0("12", letters[1:4]))
   )
   result <- tibble::tibble(
     eu_membership = item("1"), privatization = item("4"),
@@ -51,7 +63,7 @@ tomorrows_europe_attitudes <- function(survey, wave) {
     pension <- average(c("5b", "5c"), 5) - average(c("5a", "5d"), 5)
     trade <- (item("7d", 5) - item("7a", 5) + 1) / 2
     result$pension <- (pension + 1) / 1.875
-    result$trade <- tomorrows_europe_mean(trade, item("8", source_wave = 2L))
+    result$trade <- tomorrows_europe_mean(trade, item("8"))
     result$enlargement <- tomorrows_europe_mean(
       item("16a", 5, TRUE), average(c("16b", "16c", "16f"), 5, TRUE)
     )
@@ -102,7 +114,7 @@ build_tomorrow_individual <- function(
   read <- function(field, allowed) {
     tomorrows_europe_codes(survey, field, allowed)
   }
-  education <- c(0, .33, .66, 1, NA, 1, NA)[read("q39", 1:7)]
+  education <- c(0, .33, .66, 1, 1, 1, NA)[read("q39", 1:7)]
   dplyr::bind_cols(
     purrr::map2(attitudes, 1:3, function(values, wave) {
       dplyr::rename_with(values, \(name) paste0(name, "_t", wave))
@@ -112,12 +124,12 @@ build_tomorrow_individual <- function(
       knowledge_midterm = rowMeans(arrival),
       knowledge_midterm_joint = rowMeans(arrival * after),
       knowledge_joint_midterm = rowMeans(before * arrival * after),
-      age = c(21, 27, 47, 62, 73, 6)[read("q36", 1:6)],
+      age = tomorrows_europe_age(survey),
       female = as.numeric(read("q35", 1:2) == 2), minority = NA_real_,
       education_four = education,
       education_three = collapse_historical_education(education),
-      higher_education = as.numeric(education >= .66),
-      household_income = NA_real_, high_income = NA_real_,
+
+      household_income = NA_real_,
       political_interest_t1 = NA_real_,
       read_briefing = (read("t3q42", 1:5) - 1) / 4,
       attitude_extremity = extremity(attitudes[[1]]),
