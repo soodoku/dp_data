@@ -3177,13 +3177,53 @@ after (report 39% and 31%); local control of testing is 27.22% and 33.33%
 (report 31% and 38%). The 454-person sample gives 27.75% and 28.63% NCLB
 approval. Simply selecting three-session attendees does not close this gap.
 
-These comparisons retain don't-know responses in the denominator and also show
-results excluding system missingness. No survey-weight field is present in the
-recovered full file. A report-era extract, weighting file or author analysis
-specification is needed to establish the remaining difference. Do not change
-source answers, reverse established labels, or silently substitute a new sample
-to force report agreement. The report bridge is unresolved; the independent
-questionnaire-to-current-score review above is complete for all eleven indices.
+Those earlier comparisons were unweighted and retained don't-know responses in
+the denominator. The newly preserved 2006 archive supplies the missing weighting
+evidence: `source-materials/archive-2006-treatment-genpopweighted.sav` contains
+358 attendees and the original `wght` variable (mean 1, range 0.2246–5.6156).
+All 358 IDs occur in the wider source; 320 occur in the selected 454-person
+cohort. The full-source three-session attendees absent from the weighted file
+are IDs 265850 and 269212. The original reason for excluding them is unknown.
+The weighted control file contains 619 people, whereas the report describes
+621 controls. These archived analytical files therefore contain 977 people,
+compared with the report's 981; no missing records are invented.
+
+The preserved weights reproduce fourteen rounded percentages in the report:
+
+| Report quantity | Weighted before | Weighted after | Report before/after | Denominator |
+|---|---:|---:|---|---|
+| Teacher quality, Q9 code 4 | 33.8717% | 17.9002% | 34% / 18% | All 358 records |
+| Parental involvement, Q9 code 3 | 13.8282% | 24.9178% | 14% / 25% | All 358 records |
+| Academic standards, Q9 code 1 | 32.5345% | 28.0664% | 33% / 28% | All 358 records |
+| Class size, Q9 code 2 | 3.4256% | 11.6132% | 3% / 12% | All 358 records |
+| NCLB approval, Q12 codes 4–5 | 39.3045% | 31.1254% | 39% / 31% | Substantive responses 1–5: 341 / 345 records |
+| Local control of testing, Q6 code 2 | 31.0975% | 37.8603% | 31% / 38% | All 358 records, including DK |
+| State control of testing, Q6 code 1 | 62.0678% | 55.8616% | 62% / 56% | All 358 records, including DK |
+
+The source labels in the SAV and the retained Polimetrix codebook establish
+these category meanings. The report locators are PDF p. 2 for Q9 and Q6,
+p. 3 for Q12, and p. 4 for the sample totals. The NCLB comparison requires
+excluding DK/system missingness; including them gives 37.0864% and 29.1999%.
+Q6 instead matches while retaining DK. This is strong evidence for the report's
+weighting and question-specific denominators, although rounded percentages do
+not establish a unique original recipe. Excluding the one missing post Q9 answer
+also rounds to the same four reported percentages.
+
+The archive is a distinct authored source version. All fourteen comparison
+quantities use answers that match the wider source by ID. Among 125 shared numeric
+question fields, the weighted archive differs in eleven Q25b baseline cells and
+three Q24e post cells. These version differences are preserved, not silently
+substituted into the current build. The separate analytic archive contains the
+same 358 treatment IDs and rounded `matwgt` weights; its weights differ from
+`wght` by at most 0.00496.
+
+The earlier claim that no weighting file was available is therefore superseded.
+The remaining report gap concerns the four missing analytical records, the
+original exclusion rationale and exact denominator specification. The current
+454-person unweighted cohort remains supported by the authored index script
+(`historical-index-recoding.txt`, lines 5–8, `filter == 1`). Neither its sample
+nor its weights, scores or eleven numeric attitude definitions change here.
+
 
 
 ## BTP Online Primaries 2004 — btp-online-primaries-2004
@@ -3604,7 +3644,15 @@ removed after this comparison; the canonical Tomorrow's Europe pair remains.
 Git retains the removed files.
 
 The misfiled form cannot validate Europolis answers or supply a person link.
-**Next check:** find the fielded Europolis questionnaire and original exports
+The recovered [UK-English arrival questionnaire](../data/europolis-2009/questionnaires/arrival-uk-english.pdf)
+identifies Wave II on its cover and the June 4, 2009 election on page 2.
+Its printed Q38–Q46 (PDF pages 15–17) explicitly map to source
+`2Q43`–`2Q51`, including complete answer options for immigration Q48 and
+wind-energy Q51. This is distinct from the misfiled 2007 departure form.
+It establishes one English arrival version; it does not verify every language
+or the departure form, or link anonymous deposited rows.
+
+**Next check:** locate the remaining fielded versions and original exports
 or scripts with persistent IDs. Preserve 997/998/999 as source missing reasons.
 Do not append deposited rows to attitudes using an arbitrary permutation.
 No paired person-level difference count is asserted here.
@@ -4641,6 +4689,19 @@ verified group roster is attached. This is a missing verified linkage, not proof
 that discussions had no groups. Search original session materials before making
 that assertion; do not substitute a single synthetic group.
 
+**Roster search, September 30, 2026.** The vault source
+`cdd/data/Vermont/data/VT-All (Rescaled).sav` contains `GROUPID`, but every
+one of its 750 values is system missing, including all 146 `PART == 1`
+respondents. Neither the maintained survey nor the retained `vt.rdata` object
+supplies a populated group identifier. `SHOUSE` identifies the polling company
+(NSON or OSR), and `TYPE` distinguishes long/short questionnaires and
+nonparticipants; neither is a discussion group. The final report (PDF page 10)
+states that participants were randomly assigned to thirteen groups. The exit
+questionnaire (final-report PDF page 32) has participant-number and group-number
+boxes, but the available copy is blank. Recover completed questionnaire headers
+or a `CASEID` to group-number roster. Keep all 146 current group assignments
+missing until that linkage is recovered.
+
 ### VT-03: The question catalog inherited incorrect choice labels (corrected)
 
 The baseline SAV dictionary attaches efficiency-program choices to `Q77`, the
@@ -4879,8 +4940,9 @@ party-control answer.
 
 **Next check:** recheck all accepted text aliases against contemporaneous coding
 instructions, retaining raw text and rejecting unknown tokens. `postit` identifies
-people and `group_number` gives 16 groups. The published source is already merged
-`mifin.dta`; reproducing its earlier merge is a separate unresolved task.
+people and `group_number` gives 16 groups. The earlier merge is now checked by native identity (MI-04): its 310 selected
+IDs are exactly the recruiter/departure intersection. This verifies the cohort
+rule without inventing links for unmatched forms.
 
 ### MI-02: Nine shared items and the report's eleven items compare different waves
 
@@ -4942,6 +5004,61 @@ invalid-response rule; classify it `invalid_response`, with no trichotomy catego
 label. It appears twice in the phase table because the same source item belongs
 to two explicitly distinct placement batteries. Both item rows retain their
 identity and have missing correctness. No knowledge score, sample, or attitude response changes.
+
+
+### MI-04: Five arrival factual responses were incorrectly excluded from the public source
+
+The archived `data/Michigan/data/mifin.dta` contains character fields
+`t2q38`–`t2q42`. Their exclusion as contact or nonessential text was wrong:
+they are answers to the five factual questions in the
+[arrival questionnaire](../data/michigan-2009/questionnaires/arrival-questionnaire.doc).
+The public Parquet now retains all five unchanged, including empty strings,
+`n/a`, case and spelling. All 610 source rows and every previously public
+cell are unchanged. Nonempty counts are 262, 254, 279, 288 and 300;
+all are among the 310 selected participants. This corrects source preservation,
+not the maintained knowledge scores.
+
+The preserved [original arrival workbook](../data/michigan-2009/source-materials/arrival-response-workbook.xls)
+contains 318 unique Participant IDs. Of the current 310 people, 309 match
+by `postit`, giving 1,545 original factual cells. After normalizing genuine
+empty cells to empty strings, 1,539 match the authored merge. Six literal
+uppercase `NA` responses became empty strings in `mifin.dta`: `t2q38` for
+IDs 221, 910 and 913, and `t2q39` for IDs 718, 910 and 913. These are authored
+source-normalization differences, not exact literal preservation. The original
+workbook now preserves the distinction; the maintained merged survey is not
+changed. Its 318 original records have 273, 265, 286, 296 and 308 nonempty
+factual responses, respectively. The additional five merged empty cells for
+ID 5000 correspond to no original arrival row.
+Recruiter `mi.sav` has 314 distinct nonmissing `postit` values; the Sunday
+workbook has 314 distinct IDs. Their intersection is exactly the current 310.
+Sunday IDs 208, 2003, 2014 and 5002 have no recruiter match; recruiter IDs
+300, 805, 1400 and 1401 have no Sunday match. Arrival has 309 of the 310;
+ID 5000 remains absent. No unmatched person is added to the analysis.
+
+The archived arrival DOC retains tracked edits and inherited Vermont template
+metadata. Its [clean-reading PDF](../data/michigan-2009/questionnaires/arrival-questionnaire.pdf)
+accepts edits in a temporary copy only; the original is unchanged. Imported
+automatic numbering differs from data field IDs, so use wording and PDF
+pages 11–12. The five questions ask which parties control Michigan's Senate
+and House, which state's unemployment resembles Michigan's, which condition
+extends Family Independence eligibility beyond 48 months, and the share of
+African American children in poverty. Authored keys are Republican, Democrat,
+Oregon (a), residence in a high-unemployment county (a), and about 40% (c).
+
+A full nine-item arrival battery is now recoverable, but its adoption remains
+pending. The maintained arrival battery still contains four placements.
+Two written answers require an explicit interpretation: ID 1103's Senate
+answer `house of rep` is explicitly credited by the arrival recode in
+`historical-cdd-scripts:legacy/poll_scripts/mi.R`, lines 78–84; ID 1108's House
+answer `dec` is credited by its remaining-token catch-all, lines 86–91.
+Neither is automatically a documented don't-know response. No independently
+stored numeric arrival recode settles them. With both credited, the nine-item
+arrival mean would be 41.630592%; without credit, 41.558442%. Both comparisons
+retain 308 scored people after the existing invalid placement at ID 501 and
+absent arrival ID 5000. The current four-placement mean is 59.253247%; adding
+facts changes the construct and 281 of those 308 scores. It does not correct
+or replace the telephone/departure nine-item comparison.
+
 
 ## Denmark Euro 2000 — denmark-euro-2000
 
@@ -5136,6 +5253,34 @@ end-of-event measurements. Both the source and arrival build are public and
 require no local vault; X-02 gives the report comparisons and sample boundary.
 
 
+### DK-07: Discussion-group linkage is still missing after source search
+
+The maintained 359-person departure cohort has no verified group assignments.
+The six retained SAV waves, six serialized survey objects (including the
+1,702-row, 510-column merged object), and assembly list were searched for a
+respondent-to-group linkage. The assembly list identifies respondents with
+`DELNR` but supplies no group roster. Ratings of group discussion and moderators
+are substantive responses, not identifiers. Municipality, county and interview
+administration fields likewise cannot establish discussion-group membership.
+
+Hansen's July 2003 dissertation draft is now preserved as
+`data/denmark-euro-2000/papers/deliberative-democracy-opinion-formation-draft-2003.pdf`.
+PDF page 180 (chapter page 6) reports twenty discussion groups. The separate
+technical appendix is retained as
+`data/denmark-euro-2000/reports/deliberative-democracy-opinion-formation-appendices.pdf`;
+its PDF page 80 (printed page 373) shows a moderator questionnaire headed
+`Gruppe-bogstav` (group letter), but no completed respondent-to-letter roster.
+The draft is Denmark's empirical study, not a cross-poll inventory; both
+original PDFs therefore belong in Denmark's folder. The appendix's PDF creation
+metadata dates that separate file version to May 2004; do not silently treat
+it as the identical July 2003 draft version. The wider search covered 298
+source schemas, the vault inventory, authored scripts and the historical group
+aggregate data; none supplied the missing linkage for Denmark or Vermont.
+Recover a `DELNR` to group-letter roster or completed assignment records. Retain
+all current Denmark group identifiers as missing; do not infer groups from
+administrative fields or manufacture one group for the whole poll.
+
+
 ### DK-06: Follow-up instrument, keys and participant identities verified
 
 The preserved Danish arrival, departure, control and follow-up questionnaires
@@ -5214,10 +5359,10 @@ battery still matches its deposit, a separate check from group membership.
 The paper's adjudicated argument codes, coder disagreements, response slots,
 administration universe and verbatim text are not replaceable by the upstream
 knowledge score. The questionnaire and coding scheme must be consulted for those
-constructs. A redacted numeric survey can match analytical fields while omitting
+constructs. The earlier redacted survey matched analytical fields while omitting
 80 verbatim fields; field coverage is a separate contract. Census workbooks and
 coding materials moved to the external vault retain their original bytes.
-The maintained paper now reads the public numeric survey, source roster and
+The maintained paper reads the public survey, source roster and
 `data/northern-ireland-2007/argument-codes.parquet`. The latter retains all
 65,760 coder-slot records for 274 respondents, including missing labels;
 `R/argument_codes.R` selects the 240 coder fields from the original `fin.csv`
@@ -5229,6 +5374,32 @@ The first-roster-row issue was subsequently corrected as described in NI-01.
 The old vault inventory remains historical provenance, not a required runtime
 input list.
 See [dp-nireland data documentation](../../dp-nireland/docs/data.md).
+
+**September 30: restore the approved original questionnaire text.**
+The public `survey.parquet` now retains all 528 original survey fields plus
+`source_row` (868 rows × 529 columns). The 80 restored fields are exactly
+`t2q18a1:t2q21b5` and `t3q18a1:t3q21b5`: five argument slots per side,
+four topics and two interviews. These are scientific questionnaire responses;
+no additional contact fields are introduced. The user explicitly authorized
+retaining these older verbatim responses. Exact original Stata bytes are also
+preserved at `source-materials/survey-original.dta` (SHA256
+`305c8646632cfc36ca55177771a89aa2aa38149f5ab394ec14428bf9ffa7fffa`).
+The archive locator now resolves to that public file, so this source needs no
+local vault. The modern Parquet import uses `lossless-parquet`, requires zero
+excluded fields, and retains original string content without trimming,
+recoding or adjudication. The source dictionary marks every field public.
+
+There are 3,423 nonempty argument responses: 1,340 at T2 from 110 people and
+2,083 at T3 from 231 people. Every person with nonempty text already has at
+least one recorded knowledge answer at that same interview. Thus none of these
+responses establishes a previously unknown questionnaire. The original
+attendance variables and membership roster are unchanged; text is not used to
+infer attendance. All 449 previously public fields (including `source_row`)
+match exactly, and all 80 restored strings match the original source.
+Rebuilding knowledge and all canonical analysis tables leaves all 57 output
+files byte-identical, including questionnaire presence, attendance, knowledge
+scores and analytical samples. This closes the raw-text preservation gap;
+`argument-codes.parquet` remains a distinct, unchanged table of coder labels.
 
 ### NI-03: Knowledge keys reproduce the paper; restore the first question's condition
 
@@ -5546,6 +5717,54 @@ programming and simple Word formats, plus SPSS/Stata/CSV data. The precise
 missing evidence is therefore a delivered questionnaire or labeled source
 file, rather than a claim that the study never documented these questions.
 No request has been sent. Do not borrow Q19–Q24’s labels for Q17/Q18.
+
+**September 30: code 98 resolved for initial and immediate-exit Q17/Q18.**
+The [detailed results](../data/a1r-climate-2021/reports/climate_results.pdf),
+PDF p.9, give the questions as which party controls the majority in the Senate
+(Q17) and House (Q18). Their distributions explicitly distinguish “NA.” from
+correct and incorrect responses. Among the 962 `P_DELEGATE == 1` respondents,
+using `WEIGHT1`, excluding code 98 at either interview uniquely reproduces both
+the paired means and the reported NA percentages; none of the other recorded
+codes (1, 2, 3 or 77) reproduces these quantities.
+
+| Item | Paired N after excluding 98 | Initial mean | Exit mean | Initial / exit NA percentages |
+| --- | ---: | ---: | ---: | --- |
+| Q17, Senate | 949 | 0.672462 | 0.692993 | 0.807207 / 0.023018 |
+| Q18, House | 948 | 0.751737 | 0.798802 | 1.168353 / 0.230697 |
+
+These round to the report's `.672/.693` and `.752/.799` means and
+`.8/.0` and `1.2/.2` NA percentages. The mapping from code 98 to the report's
+NA category is inferred from this joint numerical match, not from another
+question's code labels. The source does not establish whether these particular
+responses were skipped or refused, so the export uses `unclassified_nonanswer`,
+not `dk`, and preserves the report label `NA.`. The four field-specific rules
+cover 255 cells in each selected-item and phase-item table: `Q17` 92, `Q18` 134,
+`T2Q17` 13 and `T2Q18` 16. Previously their reason was `unreviewed_code` and
+source label was missing. Every raw code and correctness value remains unchanged;
+observed-form nonanswers still score zero under the approved scoring rule.
+No respondent, score denominator or analysis sample changes.
+
+The follow-up fields `T3Q17/T3Q18` retain their existing classification,
+including their 40 code-98 responses. Code 77's exact offered wording and the
+substantive option labels also remain unavailable. A renewed inventory confirms
+that the replication deposit's original data file is CSV, not a labeled
+SPSS/Stata file; a search of the usable vault's 1,364 files and three ZIP
+inventories found no additional Climate 2021 source. The required fielded Word questionnaires
+remain the evidence needed to resolve those specific labels.
+
+The publisher's [supplementary appendix](../data/a1r-climate-2021/papers/a1r-climate-supplement.pdf)
+is now retained beside the paper, with its unchanged DOCX original. Appendix A2
+(PDF pp.2–3) identifies 845 treatment respondents and 574 controls who completed
+all three waves; these are a separate reported cohort, not a replacement for the
+962/671 immediate-post cohort. Appendix A4 (p.8) repeats NORC's 1,021 eligible
+post-survey invitees and 962 completers, and pp.8–9 describe the national and
+state weights. Appendix A5 (pp.10–17) reports item-level attitude comparisons
+using Weight 1; the later addendum documents group-diversity measures. None
+supplies Q17/Q18 answer options or missing-code labels: A5 ends at Q16C. The
+supplement therefore adds useful replication benchmarks but does not resolve
+the remaining knowledge-code gap. The already retained main paper, p.443,
+explicitly dates the third interview to October 2022 before the midterm election.
+No response, score, weight, group, sample or wave classification changes here.
 
 ### A1RC-04 — reproduce the climate report's attitude ratings (checked)
 
@@ -6079,6 +6298,42 @@ across 1,275 source records remain identical. No other source opts into this
 encoding repair. The canonical item catalog gains seven definitions and the
 phase-item table gains 26,775 responses; other analytical outputs are unchanged.
 
+### MAR-04: Mayor-performance responses lack verified scale instructions
+
+The source attitude export retains 271 observed responses to two mayor-performance
+fields: 143 arrival answers in `AR_Q21` and 128 departure answers in `F_Q21`.
+Both fields are labeled “evaluation of mayor’s performance” but have no source
+value labels. Observed values range from 0 to 100; their raw means are 52.02797
+and 49.35938. Raw answers remain available. Their interpreted numeric and
+normalized values remain missing because the source does not establish the
+endpoints, direction or nonanswer codes.
+
+The retained [English questionnaire](../data/marousi-2006/questionnaires/marousi-questionnaire.pdf),
+page 4, does not establish this coding. Its Q19 asks about the mayor’s performance
+using five substantive positive-to-negative categories, plus nonanswers. A
+separate Q23 thermometer starts on page 4 and continues on page 5; its mayor
+component corresponds to `AR_Q22_5` and `F_Q22_5`. These are different source
+answers: Q21 disagrees with the adjacent mayor thermometer in 61 of 131 observed
+arrival pairs and 52 of 117 departure pairs. The report’s page 4 and the paper’s
+PDF page 16 establish thermometer scales for candidate ratings, not these Q21
+performance fields. Do not transfer their scale merely because both fields
+contain numbers between 0 and 100.
+
+A source-version check joined all 1,275 people by original telephone ID
+`P_Q1_0`. The five archived files `data_all_final.dta`, `data_all_final.sav`, `data_all_final2.sav`, `data_all_final_alice.dta`
+and `data_issue_priority.dta` under `vault/cdd/data/Greece/data/` agree exactly
+with the retained source on
+both Q21 fields: zero value or missingness differences. None supplies the
+missing labels, and the inspected authored analyses do not establish their
+recoding. This is a measurement-documentation gap, not evidence that the
+responses themselves are corrupt.
+
+Preserve the current unclassified status and original answers. The evidence
+needed to interpret these 271 answers is the actual arrival/departure Q21
+wording and coding instructions. A thermometer interpretation is plausible,
+but the observed distribution alone does not establish it. This review does
+not reopen the sixteen departure-ID disagreements retained by user instruction.
+
 ### TZ-01 — group assignment does not by itself establish treatment eligibility
 
 The retained `participants.dta` has 2,225 rows: 2,002 labelled citizens, 121
@@ -6097,13 +6352,38 @@ section 3.2, says 401 were invited and 370 complied in 25 groups. Its 370
 therefore matches the intersection of the assignment and group files, while
 the extra group row has no verified treatment-arm status.
 
-The current `dp-distortions` out-of-sample reader explicitly retains all 371
-grouped rows, including the one with missing assignment. A future canonical
-upstream membership table should keep the literal group record and the
-assignment status as separate fields. Determine whether `240301` was a late
-attendee, a nonrandom participant, or an erroneous roster entry from the
-original event and randomization records before changing the analysis sample.
-Do not infer invitation or eligibility solely from a group number.
+The original analytical cohort is now established by the retained
+[peer and moderator analysis script](../data/tanzania-2015/scripts/replication-sub-hypotheses.do),
+lines 9–12. It first selects `zdelib == 1` and then matches `HHID` to the group
+file with `unmatched(none)`. That rule includes 370 people and excludes
+`240301`. The original script therefore does not treat every recorded group
+assignment as sufficient evidence of randomized-treatment eligibility.
+
+The deposited record remains useful source evidence. All 109 baseline `H` and
+`X` wave fields are missing for `240301`; 43 corresponding follow-up fields
+are observed, including all 22 retained policy items and all nine knowledge
+components. Its complete follow-up `H` response vector is unique among the
+citizens, so it is not an exact duplicate of another deposited respondent.
+Neither that uniqueness nor its two group numbers establishes actual attendance
+or supplies a missing randomization record.
+
+The current `dp-distortions` out-of-sample reader deliberately retains all 371
+rostered people. This is a different cohort from the original script's 370.
+Restricting to the latter would change round-one group 24 from 15 to 14 people
+and round-two group 13 from 14 to 13; the other 48 group-episode sizes would
+not change. Since the disputed person's baseline is entirely missing, all
+baseline group means, baseline observed-peer means and paired item samples
+would remain unchanged. Their 22 observed follow-up ratings affect 22 group-item
+means: removing this person would change those means by between −0.024603 and
++0.058608 on the normalized 0–1 scales. Among the 370 eligible people, 294
+follow-up leave-one-out item means across 27 people would change, by between
+−0.028388 and +0.068376. These are cohort comparisons, not adopted corrections.
+
+All 371 source roster rows and all answers remain preserved. Use a separately
+named eligibility rule when reproducing the authors' randomized cohort; do not
+delete the extra source record or infer attendance from its group number.
+Whether `240301` was a late attendee, a nonrandom participant or an erroneous
+roster entry still requires the original event and randomization records.
 
 ### TZ-02 — retain the observed sex field in the participant export (corrected)
 
@@ -6193,7 +6473,7 @@ is imposed on this standardized index.
 
 ### TZ-04 — panel membership requires both selected measurements
 
-Source `HHID == 240301`, canonical respondent `1323`, has missing baseline
+Source `HHID == 240301`, formerly canonical respondent `1323`, has missing baseline
 `H600` and observed follow-up `H601`, but `analysis_participants.panel` was true.
 The user-approved rule requires both selected measurements, reducing the panel
 count from 1,858 to 1,857 while retaining all 2,002 people and the observed
@@ -6203,6 +6483,12 @@ The shared paired-analysis rule is distinct from deleting a respondent from the
 source data. The same [review script](../scripts/review_tanzania_knowledge.R)
 checks this identity and records the old and corrected panel counts in the
 [audit summary](../audit/corrections/tanzania-2015/summary.csv).
+
+The canonical participant and score tables now use native `HHID` values as
+respondent IDs; this person is therefore `240301` in current outputs. Physical
+source row 1323 remains available, and the archived correction CSVs retain the
+row-based identifiers used when those comparisons were recorded. The identity
+change preserves every score, panel flag and source person; see TZ-07.
 
 ### TZ-05 — borrowing uses five categories; include it with the other policy items (corrected)
 
@@ -6266,6 +6552,122 @@ mean directional polarization from −0.038309424 to −0.039400307; absolute
 polarization from −0.007626856 to −0.005084460; and gender domination from
 −0.005371478 to −0.007219525. These are item-set sensitivity comparisons,
 not new causal estimates. Analytical weighting remains undecided (X15).
+
+### TZ-06 — original subgroup syntax and education label need separate review
+
+The newly retained [original subgroup script](../data/tanzania-2015/scripts/replication-sub-hypotheses.do)
+is evidence of the authors' methods, not code used by the current build.
+Its item-level subgroup loop creates a variable named `temp` at line 79 but
+tries to sum `tempH...` at line 80. Those latter variables are neither created
+by the script nor present in the input dataset. Stata's `capture` suppresses
+the error, and the intended item-level subgroup means are not created.
+
+This does not affect the script's reported peer regressions: lines 185–188
+select the separate aggregate `H100`, `H200`, `H300` and `H400` leave-one-out
+means, whose temporary-variable names agree in lines 73–76. No current
+`dp-data` or `dp-distortions` builder executes this historical script or reads
+its missing item-level subgroup variables. The source is preserved unchanged;
+no production formula or output changes follow from this dormant error.
+
+The education interpretation needs both documentary and numerical evidence.
+Line 58 defines `educated` as being above the median of `X1`. The deposited
+label calls X1 “Political knowledge,” whereas the preanalysis plan (PDF pages
+6–7) defines an education/general-knowledge index containing twelve factual
+questions, literacy and highest grade completed. The final report (PDF page 16,
+printed page 8) also describes knowledge/literacy and years of schooling. The
+plan is evidence of intended design; it does not establish the executed formula.
+
+Independent reconstruction establishes what the deposited X1 actually contains.
+For all 2,001 citizens with observed X1, standardize `X1010:X1120` against the
+1,000 baseline controls, average each person's available standardized components,
+and standardize that mean against the same controls. This twelve-fact-question
+calculation agrees with X1 to within 8.9e−16. Neither literacy `X1130` nor
+schooling `X1140` contributes. Thus the historical median flag separates people
+on a factual-knowledge index; it is not a verified schooling contrast.
+
+Those twelve factual components also retain 9,688 code −99 answers labeled
+“DON'T KNOW” and 151 code −96 answers labeled “OTHER” or “OTHER (SPECIFY)” as
+numbers in the deposited index, affecting 1,952 people. These are separate
+baseline questions from the nine policy-knowledge components corrected in TZ-03.
+As a diagnostic only, mapping these negatives to zero and recalibrating changes
+56 of the 370 original peer-cohort median classifications. Both versions classify
+185 as above the median. This demonstrates a measurement difference, not an
+approved new score or a revision of the historical paper.
+
+A schooling candidate is retained in `school`: 2,001 observed categorical codes
+match the recovered `L_SelfEducGrades` dictionary's categories. The plan identifies
+highest grade completed as source question `s4q2`; the report's Q14 appears on
+PDF page 73 (printed page 65). However, the dictionary is attached to transformed
+`X1140`, whose values range from 0 to 22 rather than the original grade codes,
+and the cleaning scripts that would establish the full lineage were withheld.
+Do not treat X1140 as the dictionary's raw categories or claim a verified conversion
+to years of schooling. Adult education and supplementary-course categories need
+explicit treatment before imposing an educational rank or median flag.
+
+The current out-of-sample reader leaves education unavailable, so no current
+education contrast changes. Preserve the raw school and knowledge evidence;
+adding a schooling contrast or changing the deposited general-knowledge index
+requires a separate reviewed decision. Source values and historical estimates
+remain unchanged here.
+
+### TZ-07 — use native household IDs consistently across typed exports
+
+The source has 2,225 unique, nonmissing `HHID` values. Tanzania's attitude and
+weight exports already use those native IDs, whereas the canonical knowledge
+exports formerly numbered the 2,002 citizens from 1 to 2,002 after filtering.
+A valid bridge was available through `source_row`: the citizens occupy the
+first 2,002 physical source rows. The previous numerical joins were therefore
+recoverable, but a direct join on respondent ID did not identify the same people.
+
+The canonical selected and phase participant/score tables now use `HHID` as
+`respondent_id` and identify this as `source-id` identity. Physical `source_row`
+is assigned before filtering to citizens and retained even when input rows are
+reordered. Historical comparison IDs remain unchanged in archived audit files;
+no historical respondent ID is invented for this source.
+
+This changes 12,012 identifier cells across four canonical tables and 4,004
+`identity_basis` cells in the two participant tables. Every score, missing value,
+participant, assignment, weight and group remains unchanged. Native IDs now join
+directly to the citizen attitude and weight records for all 2,002 people. The
+review script writes fresh comparisons to a temporary directory unless an
+explicit `--output-dir` is supplied, preserving the archived row-ID comparisons.
+
+### TZ-08 — recognize questionnaires from actual policy answers
+
+The phase export previously left questionnaire presence unknown for all 4,004
+citizen interviews because Tanzania supplies deposited knowledge indices rather
+than the item rows used by the common presence routine. That omission did not
+mean the source lacked questionnaire answers. The 22 reviewed policy items in
+`metadata/tanzania_attitude_items.csv` establish positive form evidence for
+2,001 baseline and 1,858 follow-up interviews. A finite answer within its item's
+reviewed bounds, excluding its recorded nonanswer codes, is sufficient evidence.
+Derived knowledge indices, assignment flags, groups and weights are not evidence
+for this determination. A questionnaire containing only nonanswers would remain
+unknown under this rule; no such case occurs in the retained citizen source.
+
+The remaining one baseline and 144 follow-up interviews remain unknown. Each
+has all 109 wave-specific numeric H/X fields and the two wave-specific citizen
+and employment-sector fields missing. The 37 baseline and two follow-up policy
+cells containing −99 occur on forms with other substantive policy answers.
+Native household 240301 has follow-up answers but no baseline answers. Its arm,
+attendance, assignment and existing nonpanel status remain unchanged; observing
+a questionnaire does not establish participation in deliberation.
+
+Timing is unchanged. The working paper
+`data/tanzania-2015/papers/tanzania-working-paper.pdf`, PDF p.13 / printed p.12,
+§3.1, places baseline before the information video and subsequent invitation.
+PDF p.15 / printed p.14, §3.2, describes telephone follow-up measuring effects
+weeks rather than hours after treatment and split across multiple interviews.
+The canonical stages therefore remain pre-arrival t0 and follow-up t3. Presence
+means some questionnaire answers at that stage, not completion of every module.
+
+The correction changes exactly 3,859 `wave_observed` values from missing to true
+and the corresponding `questionnaire_presence_status` values from `unknown` to
+`observed`. All other phase-score cells are identical. All other 55 output files
+are byte-identical; only the phase-score Parquet and its manifest change. Source
+bytes, scalar knowledge and attitude scores, cohorts, attendance, weights and
+schooling definitions are preserved. Focused tests also reject out-of-range or
+sentinel-only answers as positive evidence and preserve genuine scale zeroes.
 
 ### NH-02 — Event year corrected; attendance needs reconciliation
 
@@ -7193,6 +7595,29 @@ group/poll summaries recompute from observed scores; the poll exit mean changes
 in NH-02. Eight post-dependent measure definitions now carry version
 `nh-exit-presence-v2`.
 
+
+The same invalid-code convention now applies to the interim workbook wave.
+Five raw zeros occur in three completed interim forms: ID 3133 has zeros in
+Q36, Q41 and Q43; ID 3269 in Q36; ID 3255 in Q41. These people have respectively
+50, 54 and 54 nonzero responses across the 55 interim question fields, so their
+whole questionnaires are observed. The retained field questionnaire, PDF
+pp. 11–12, offers no zero category for these factual questions. Their item
+correctness therefore changes from zero to missing, with `invalid_response`
+recorded separately; all raw answers remain unchanged.
+
+The same review identifies 174 previously unclassified interim DK answers:
+Q35 code 5 (31), Q37 code 5 (9), Q39 code 4 (19), Q40 code 3 (56), Q41 code 4
+(18), Q42 code 5 (12), and Q43 code 3 (29). The final option in each retained
+question is explicitly “Don't know.” Their conventional correctness stays zero;
+`knowledge_response` and `response_reason` now identify DK and retain that
+source label. Q36's field-form/CATI option conflict remains unresolved, as
+recorded in X-03, and its substantive option labels are not changed.
+
+Only the phase item classifications change. Every person and phase score,
+fixed eight-item denominator, original ID, group assignment and questionnaire
+presence flag is unchanged. The five zeros contributed no correct answers
+before the repair and contribute none afterward.
+
 ## Zeguo 2005 — zeguo-2005
 
 ### ZG-01: Component joins and three item-coding overrides are explicit
@@ -7643,6 +8068,42 @@ source-based tests independently compare every raw and scaled paired response.
 No participant, attendance, group, knowledge score or historical aggregate
 changes. Downstream adoption of these paired attitudes is a separate comparison.
 
+**September 30: complete the report-verified initial/exit rating coverage.**
+The paired catalog now retains all 93 Climate ratings reported in
+`data/a1r-climate-2021/reports/climate_results.pdf`, rather than only the 72
+items selected by the earlier downstream reader. The added 21 items are
+Q13A:D (political efficacy), Q14A:E (views of people who disagree), Q15A:I
+(values), and Q16A:C (frequency of loneliness-related feelings); see PDF
+pp.7–9. Higher values retain greater agreement for Q13/Q14, greater importance
+for Q15, and greater frequency for Q16. Oppositely worded statements are not
+silently reversed or combined into a new construct. The report's grouped
+“Don't Know or Not Applicable” category does not establish distinct labels
+for individual administrative codes; those labels remain null.
+
+This adds 370,188 typed response rows (21 items × two waves × 8,814 source
+people). Of these, 174,719 baseline and 33,103 exit responses are substantive
+0–10 ratings, normalized by division by ten. Another 10,375 baseline and
+1,190 exit cells contain nonanswer codes and retain missing numeric values;
+150,801 missing exit responses retain their independently established
+`absent_form` status. All raw source codes are preserved. Each of the 21
+item-paired weighted before/after means and changes reproduces the report
+within its three-decimal rounding, extending the existing 93-item report
+check to the typed handoff. This verifies source transport; it does not select
+weights, constructs or a new downstream analytical sample.
+
+Every previously exported attitude value and row remains unchanged, as do
+all participant, group, knowledge, weight and historical aggregate outputs.
+The phase catalog contains 140 definitions across A1R 2019 (47) and Climate
+(93), and the paired response table contains 2,000,552 rows. No later-follow-up
+attitudes are added here. The Climate source retains 44 T3 counterparts of
+the previously exported 72 items, including 58,390 substantive answers and
+4,046 nonanswers among 1,419 source people. The authored preparation script
+explicitly uses 27 repeated policy items at T3 (lines249–317); the complete
+fielded follow-up questionnaire is still needed to establish all remaining
+wording and category labels without assuming that matching suffixes imply
+identical questions. The unresolved T3Q17/T3Q18 knowledge categories likewise
+remain unchanged.
+
 ## Cross-poll issues for the eventual schema
 
 ### X-01: Knowledge eligibility is not the respondent universe
@@ -7813,7 +8274,7 @@ can be genuine even where only some respondents have answers to it.
 
 | Poll | Actual selected source fields and timing evidence | Confidence and other retained phases |
 | --- | --- | --- |
-| Michigan 2009 | `data/michigan-2009/questionnaire-pre.pdf`, pp.1/7: telephone interview followed by invitation to the future November 13–15 event. Baseline `q14:q18`, `q4/q5/q7/q8`; departure `t3q38:t3q42`, `t3q10/t3q11/t3q13/t3q14`. | Direct pre-arrival. Arrival `t2q*` exists; only partial common knowledge coverage, described below. |
+| Michigan 2009 | `data/michigan-2009/questionnaire-pre.pdf`, pp.1/7: telephone interview followed by invitation to the future November 13–15 event. Baseline `q14:q18`, `q4/q5/q7/q8`; departure `t3q38:t3q42`, `t3q10/t3q11/t3q13/t3q14`. | Direct pre-arrival. Arrival `t2q*` exists; all nine common raw questions are now preserved (MI-04), while the maintained scored arrival battery remains partial. |
 | New Haven, March 2002 | `data/new-haven-2004/papers/disaggregating-deliberation-27s-effects-28lsero-29.pdf`, p.8: T1 initial telephone interview, T2 written questionnaire **after the first deliberative session**, T3 at weekend end. `R/source_new_haven.R` joins the authored `Pre/Mid/Post` workbook sheets; facts are `pre/mid/post_q35/q36/q37/q39:q43`. | Direct pre-arrival. Mid is `interim_1`, not arrival. The folder/historical label2004 does not change the documented2002 event date. |
 | NIC 1996 | `data/nic-1996/codebook.txt`, opening paragraphs: initial household interviews November 4, 1995–January 18, 1996; source T2 combines event-exit participants and contemporaneous telephone nonparticipants. `papers/nic-paper.pdf`, p. 19: source T3 about ten months later after the presidential election. `R/respondent_nic.R` reads suffixes1/2/3 for `WEDLOCK/AFDC/UNEMP/SPEND/TRADE/TROOPSA:TROOPSD/POLREP/POLDEM`. | Direct initial-interview baseline. SourceT2 is exit, not arrival; source T3 is follow-up. Historical `knowledge_midterm` exposes source T2 at canonical t2; its original selected endpoint is source T3/canonical t3. No separate arrival questionnaire is established. |
 | NIC2, 2003 | `data/shared/reports/foreign-policy-report.pdf`, p.2, visually checked because scanned: forty-minute telephone interview **before coming to Philadelphia**, repeated at the end of two days. `R/respondent_nic2.R` reads baseline `wrm3_b/c,aid3,wrm5,kno1_a/b,kno2_a/b,kno3_a/b,wrm1_b`, then the same stems prefixed`q`. | Direct pre-arrival. No separate arrival measurement identified in reviewed materials. |
@@ -7849,14 +8310,14 @@ identities and questionnaire-presence evidence.
 | Denmark 2000 | `data/denmark-euro-2000/arrival.sav`:363 unique`DELNR`, linked to baseline`delnr`;358 overlap the current departure IDs. Nine arrival fields`S4_1:S9_1,S11_7_1,S11_9_1,S11_11_1`. Paper`data/denmark-euro-2000/papers/deliberative-democracy-euro.pdf`, Table 9/PDF p. 19; DK-02 distinguishes the current359 departure records. | The original arrival file and dictionaries are now public; DK-05 records exact-byte preservation. The arrival scores now join by DELNR; 358 of the 359 existing phase participants
 have an arrival form, and DELNR 203 remains missing. Do not equate363 arrival IDs,359 departure IDs and358 overlap, or infer missing identities from the anonymous deposited battery. |
 | Vermont 2007 | `data/vermont-energy-2007/survey.sav`: all nine`Q030T2:Q038T2`, with146 respondents having at least one answer. Final-report PDF p. 12 explicitly identifies arrival. | Use the reviewed report-based keys, including VT-01's renewables decision, while retaining the instrument ambiguity; do not alter keys simply to expose the wave. |
-| Michigan 2009 | `data/michigan-2009/survey.parquet`: four common arrival placements`t2q10/t2q11/t2q13/t2q14`, plus arrival-only standard-of-living placements`t2q7/t2q8`. There are no arrival factual counterparts`t2q38:t2q42`. Final report PDF p. 13 marks the two added placements as arrival. | This is **partial** arrival coverage, not the complete current nine-item bank. The two added items have196/209 correct responses; dividing by310 reproduces report63.2%/67.4%. Report11-item baseline combines telephone facts/four placements with two arrival-only placements. Do not silently turn that mixed-time bank into a uniform baseline. |
+| Michigan 2009 | `data/michigan-2009/survey.parquet`: four common arrival placements`t2q10/t2q11/t2q13/t2q14`, plus arrival-only standard-of-living placements`t2q7/t2q8`. The five factual counterparts `t2q38:t2q42` were recovered and are now public (MI-04). Final report PDF p. 13 marks the two added placements as arrival. | The maintained scored comparison still has **partial** arrival coverage; the recovered five factual responses can support a separately reviewed full nine-item arrival score. The two added items have196/209 correct responses; dividing by310 reproduces report63.2%/67.4%. Report11-item baseline combines telephone facts/four placements with two arrival-only placements. Do not silently turn that mixed-time bank into a uniform baseline. |
 
 **Completed upstream implementation: arrival comparisons.** `R/analysis_arrivals.R`
 adds the five-question California, six-question Europolis, nine-question Denmark
 and nine-question Vermont arrival scores to their existing comparable batteries.
 Michigan receives a separate four-placement battery at telephone, arrival and
-exit; its absent arrival factual questions are not borrowed from telephone or
-scored as incorrect. Separate expanded batteries retain California's eight
+exit. Five factual arrival fields have now been recovered (MI-04), but their
+scoring extension is pending; no telephone answers substitute for arrival. Separate expanded batteries retain California's eight
 arrival/exit items, Europolis's nine, and Michigan's six placements. The latter
 two added Michigan placement questions never enter a telephone comparison.
 
@@ -9113,6 +9574,48 @@ missing. Vermont code99 remains valid in percentage questions; monetary
 willingness-to-pay responses retain dollars without an invented upper endpoint.
 These additive exports do not redefine the historical composite attitude indices.
 
+**Source questionnaire presence, September 30.** The source attitude export
+previously obtained presence only through a canonical knowledge-score join.
+This left recorded questionnaires marked unknown when their respondents or
+interview waves were outside that analytical cohort. The shared postprocessor
+now uses substantive answers checked against the source scale, or explicitly
+recorded DK/refusal responses with a nonmissing raw code, to establish presence within the same poll, source file, physical source row
+and literal wave. It changes 125,840 presence flags across 3,284 source forms;
+15,890 raw missing items on those forms change from `source_missing` to `blank`.
+No raw response, numeric value, identity, timing, score, weight or cohort changes.
+An explicit absence that conflicts with a substantive answer stops the build.
+
+| Source | Newly established forms | Presence flags changed |
+| --- | ---: | ---: |
+| Denmark baseline | 1,328 | 47,808 |
+| Denmark arrival | 5 | 185 |
+| Denmark follow-up | 355 | 11,715 |
+| Denmark separate control questionnaire | 992 | 20,832 |
+| Vermont baseline | 604 | 45,300 |
+
+Direct checks against the five registered public source files reproduce all
+99,618 substantive answers establishing 3,279 forms, including source row and
+native respondent identifiers. Another five forms contain 78 explicit DK responses;
+each code and label matches the original source dictionary. Vermont's 604 corresponding arrival forms and
+604 exit forms contain no recorded attitude answers and remain unknown. The
+separate Denmark control questionnaire retains its literal `source_t2ctrl`
+identity and unassigned canonical timing; questionnaire presence does not
+establish when an interview occurred or whether someone attended deliberation.
+
+Five Denmark forms have only explicit DK responses among the exported attitude
+items: baseline `ipnr` 1475, 2210, 3183 and 3366 (source rows 582, 881, 1308 and
+1376), and control `IP` 11834 (row 671). Their recorded attitude cells number
+36, 1, 36, 2 and 3 respectively. Their explicit DK responses establish questionnaire presence while every
+attitude value remains missing. The baseline DK codes are field-specific 3, 5, 6, 12 and 15; the control
+items `S_08`, `S_08B` and `S_09` contain 5, 3 and 6, labeled respectively
+“Ved ikke / Har du ikke besluttet dig,” “Ved ikke” and “Ved ikke.” All five
+also contain source occupation, schooling, community-size and income answers.
+The retained control questionnaire pp.1–2 explicitly asks those background
+questions during that interview. These background answers provide additional corroboration, but the shared rule
+uses the recorded DK responses and contains no person-specific exceptions.
+A raw missing value, an invalid code or an ambiguous combined DK/NA category
+alone does not establish presence.
+
 Marousi's original identifier is wave-specific: `P_Q1_0` for telephone,
 `AR_CODE` for arrival and `F_CODE` for exit. The canonical bridge still follows
 the authored source-row alignment, with the sixteen conflicting departure IDs
@@ -9185,6 +9688,18 @@ preserved scripts, their loose vault copies were also deleted following SHA256
 checks against both the tracked poll files and merged commit
 `e92b9aa8e5aef75488ecda2887edae9a58cc9489`. The total is194 removed files.
 Unmatched scientific files remain.
+
+After publishing v0.4.2 at commit
+`336f88a940d77e5a714e7521cac7343298ece608`, nine further exact vault
+copies were removed: Australia's codebook, two California index drafts,
+Denmark's wave crosswalk and four questionnaires, and Northern Ireland's
+version-16 argument-coding guide. Every deletion followed byte and SHA256
+checks against both the tracked poll-folder original and the downloadable
+release; all eight Word originals have readable PDF companions. The public
+archive rebuilt all 57 output files byte-for-byte without Git history or the
+vault. This brings the cleanup described here to 203 files. Unique scientific
+sources, unresolved source versions and originals not yet preserved publicly
+remain in the vault.
 
 
 ### Shared full-questionnaire and peer-denominator correction, September 30, 2026
@@ -9260,6 +9775,69 @@ answers alone. Raw responses and source identifiers are preserved under
 `data/san-mateo-2008/`; no new correction has been applied to this record.
 
 
+### SM-09: Preserve scientific source strings, dates and questionnaire headers
+
+Eighteen string columns were previously omitted under a blanket “contact or
+nonessential text” exclusion. They are now preserved unchanged in the existing
+`data/san-mateo-2008/survey.parquet`, with their source dictionary and hashes
+updated. The original `smdp 3-18-08.dta` has SHA256
+`f0cb462fee3760bacc8c81bcca58c61da54fad9637968cbc001880574ef1ef93`.
+All 1,806 rows and all 307 previously public columns match the earlier extract
+exactly. The 18 additions preserve 32,508 source cells, including empty strings;
+17,353 contain nonempty values. No trimming, category recoding or imputation is
+applied.
+
+Fourteen columns (`Q1I:Q4I`, `Q7I:Q9I` and their `t2` counterparts) contain
+13,490 nonempty authored attitude bins such as “1 to 3,” “4” and “5 to 7.”
+They are scientific derived fields, not interviewer notes or verbatim answers.
+The underlying baseline questions are in `questionnaire-pre.pdf`, pp. 1–3.
+These bins are preserved as coding evidence and never substituted for raw
+attitude answers. Most reproduce the corresponding numeric categories, but
+three source limitations make wholesale reconstruction inappropriate:
+
+- Baseline `Q3I` says “6 to 10” for 88 people whose numeric Q3 is missing,
+  even though Q3's offered substantive scale is 1–7.
+- `t2Q7I` is empty for every person, although 236 numeric t2Q7 answers are
+  within the offered 0–10 scale.
+- Participant 1411, source row 1683, has “1 to 3” in `t2Q2I` and `t2Q8I`
+  while both corresponding numeric answers are missing. The bins preserve
+  partial historical information but do not identify either exact answer.
+
+`Q128OTHER` contains 16 education responses, with 15 distinct strings, all
+paired with Q128 code 7 (“Other [specify]”). The baseline questionnaire, PDF
+p. 8, explicitly requests this text. These answers remain literal source
+responses; no education category is reassigned from them.
+
+`INTDATE` contains 1,806 valid eight-character dates spanning February 3 to
+March 6, 2008 (33 distinct dates), before the March 15–16 event. The original
+strings remain intact. `QSTGRP` contains questionnaire-header codes “1” and
+“2” for 938 and 868 people. The already-public `t2QSTGRP` contains 239 headers;
+237 match the baseline code, while participants 1377 and 1027 switch codes.
+Neither header is interpreted as the separately recorded small discussion
+`GRP`, and no undocumented meaning is assigned to this apparent form distinction.
+
+`SRVYINV` is also retained without interpretation. Its 235 nonempty values are
+single characters: 218 are “1” and the other 17 contain mixed digits, letters
+or a comma. All occur in source DISPOS categories 19/20, none among the 903
+DISPOS18 records. The questionnaire's invitation section (PDF pp. 9–11) names
+INVITE/INVITE2, but it does not establish an exact mapping to SRVYINV. The field
+therefore does not become an invitation-acceptance or attendance indicator.
+
+The six remaining exclusions are contact locality/postal code (`CITY`, `ZCODE`),
+telephone details (`ALTPHN`, `PHNNUM`), callback scheduling (`BSTTIM`), and mixed
+recruitment comments (`COMMENT1`) containing telephone/email details and callback
+instructions. Their exclusion reasons are explicit. The original archive remains
+available for further authorized review.
+
+No new person or questionnaire is inferred from the added strings. Exactly 238
+people have a nonempty post attitude bin, all already marked as participants.
+Participant 1467 has no nonempty post bins; the separate blank-form question
+in SM-08 remains pending. All scores, groups, source identities and attendance
+classifications remain unchanged. Physical source rows are the complete identity
+bridge: the original PARTICIPANTID is observed and unique for 710 people, while
+RESPNUM is not unique across the full file.
+
+
 ### X-22: Complete source-form dependencies and safe local subsets
 
 The full-questionnaire correction adds real dependencies beyond the scored
@@ -9324,3 +9902,77 @@ attitude scoring. Field-specific checks reproduce the codebook frequencies;
 versus three. The printed block also contains a malformed cumulative-frequency
 entry. Preserve the explicit source meanings and actual raw counts; do not
 invent observations or change raw codes to reconcile the printing.
+
+
+### X-23: Questionnaire write-ins were incorrectly classified as nonessential text
+
+The original survey extraction mixed questionnaire answers with contact and
+administrative fields in one exclusion list. That classification concealed
+scientific source material. Under the user's approval to retain verbatim
+responses, seventeen fields have been restored unchanged to five poll surveys:
+
+| Poll | Restored fields | Meaning and evidence |
+| --- | --- | --- |
+| BTP 2007 | `race_other`, `rm1`, `rm2`, `rm3` | Original SAV dictionary: other race and specified Protestant, other Christian and other religion. |
+| BTP Online Primaries 2004 | `b1q38`, `f1q49a:d` | Original DTA dictionary: primary vote choice and identification of Clark, Kucinich, Sharpton and Gephardt. These are responses, not participant contact names. |
+| California 2011 | `q64oth`, `q70oth`, `q72oth` | Original DTA dictionary identifies employment, ethnicity and party affiliation for the corresponding numbered fields. The pre-questionnaire PDF pp. 8–9 asks employment specification, other ethnicity and party identification; printed numbers 65/71/73 differ from source 64/70/72. |
+| BTP Health/Education 2005 | `q44post`, `q45post` | Original DTA labels identify occupation and job-duty descriptions. The wider preserved source already carries these fields; the selected 454-person source now retains them too. |
+| NIC 1996 | `OCCUPAT1`, `HSTPOTH`, `SAQOTH` | Original SAV dictionary identifies occupation and two specified-other questionnaire responses. |
+
+Every existing public field, source row and respondent count is unchanged. The
+new columns match the original source strings exactly, including literal blank
+and nonanswer strings; no new category interpretation, correctness score or
+ethnicity classification is inferred. Their dictionaries now identify them as
+retained string fields. Participant contact fields and administrative identifiers
+remain separately excluded. Moderator names have not been adopted as discussion
+group identifiers. The original survey hashes and full source dimensions remain
+the lineage reference; hashes of the expanded public extracts are updated.
+
+The fact that a field is textual does not establish that it is nonessential.
+Michigan's separately recovered arrival factual answers demonstrate the same
+classification failure. Future exclusions must state their actual purpose and
+be checked against questionnaire meaning, rather than dropping all text.
+
+The redundant Health/Education occupation-response Parquet and its dictionary
+have been removed after an independent comparison: all 454 by five projected
+values, missingness and both respondent IDs occur in the expanded survey, and
+all 840 original variable labels occur in its dictionary. The source hash,
+archive locator and original MD5 are retained with the canonical survey's
+provenance. No original survey version has been discarded by this cleanup.
+
+### X-24: Blank source text inflated observed-input counts
+
+The shared `source_response_rows()` importer treated a character field as missing
+only when its value was R `NA`. Literal empty strings and whitespace therefore
+counted as answered, although the questionnaire-presence rules correctly treated
+them as empty. Restoring NIC's three scientific text fields also exposed three
+missing questionnaire-presence dependencies for each of seven baseline-related
+measure definitions. Those twenty-one declarations are now explicit.
+
+Blank or whitespace-only text is classified as `system-missing`, with
+`missing_code = "system"`, across every poll. The literal `raw_text` is retained
+unchanged. Nonempty strings such as `NA` and `n/a` are not assigned a global
+meaning; their interpretation requires field-specific evidence.
+
+There are 4,494 blank source-response records under the expanded declarations:
+1,909 NIC records (`HSTPOTH`: 899; `OCCUPAT1`: 300; `SAQOTH`: 710) and 2,585
+Presidential Primaries records (`b1q38`: 409; `f1q49a:d`: 544 each). The NIC fields
+add 2,733 raw-source records: 1,909 blank and 824 nonempty. Existing Presidential
+Primaries records now correctly mark those 2,585 blanks as missing.
+
+Compared with the previous public build, the NIC declarations add three source
+fields to 6,377 measure records; the newly preserved nonempty answers raise
+observed-input counts in 4,795 of them, by 5,768 inputs altogether. The blank-text
+fix decreases observed-input counts in 4,693 Presidential Primaries measure
+records, by 15,510 inputs altogether. Compared instead with expanded NIC
+declarations processed by the old importer, it removes false observed inputs
+from 6,356 NIC records. The last comparison explains the bug; it is not the
+change from the public release.
+
+These counts describe available inputs, not knowledge correctness or attendance.
+Numeric measures, respondent identities, literal source answers and final
+questionnaire-presence decisions are unchanged from the previous public build.
+A regression includes actual empty, whitespace, missing and nonempty text, and
+fails with the old importer. The existing NIC phase-presence regression also
+protects the five absent baseline interviews against false positives from empty
+text; it passes after the shared correction and regenerated outputs.

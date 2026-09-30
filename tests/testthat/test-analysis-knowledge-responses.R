@@ -305,3 +305,113 @@ test_that("Zeguo offered codes distinguish DK from invalid knowledge answers", {
   expect_identical(result$correct, c(0L, NA_integer_, 0L, 0L, NA_integer_))
   expect_identical(result$raw_value, items$raw_value)
 })
+
+
+test_that("Climate nonanswers are scoped to verified questions and waves", {
+  fields <- c("Q17", "Q18", "T2Q17", "T2Q18", "T3Q17", "T3Q18",
+    "Q17", "T2Q18"
+  )
+  items <- tibble::tibble(
+    poll_id = "a1r-climate-2021", source_dataset = "control",
+    respondent_id = as.character(seq_along(fields)),
+    item_id = ifelse(grepl("18$", fields), "knowledge_002", "knowledge_001"),
+    source_row = seq_along(fields), source_column = fields,
+    wave = c("t0", "t0", "t2", "t2", "t3", "t3", "t0", "t2"),
+    raw_value = c(rep(98, 6), 77, 77), raw_text = NA_character_,
+    correct = 0L, response_status = "answered", wave_observed = TRUE
+  )
+  result <- enrich_knowledge_responses(items)
+  expect_identical(result$response_reason,
+    c(rep("unclassified_nonanswer", 4), rep("unreviewed_code", 4))
+  )
+  expect_identical(result$source_response_label,
+    c(rep("NA.", 4), rep(NA_character_, 4))
+  )
+  expect_true(all(is.na(result$knowledge_response)))
+  expect_identical(result[names(items)], items)
+  scored <- standardize_knowledge_scores(result)
+  expect_identical(scored$items$correct, items$correct)
+  expect_identical(scored$n_changed, 0L)
+})
+
+
+test_that("Climate code 98 reproduces the item-specific report categories", {
+  survey <- readr::read_tsv(project_path(
+    "data", "a1r-climate-2021", "participants.tab"
+  ), show_col_types = FALSE)
+  cohort <- survey[survey$P_DELEGATE == 1, ]
+  expect_equal(nrow(cohort), 962L)
+  for (item in c("Q17", "Q18")) {
+    fields <- c(item, paste0("T2", item))
+    printed_means <- if (item == "Q17") c(.672, .693) else c(.752, .799)
+    printed_na <- if (item == "Q17") c(.8, .0) else c(1.2, .2)
+    matching <- numeric()
+    for (code in c(1, 2, 3, 77, 98)) {
+      selected <- complete.cases(cohort[fields]) &
+        rowSums(cohort[fields] == code) == 0L
+      means <- vapply(fields, function(field) {
+        stats::weighted.mean(cohort[[field]][selected] == 1,
+          cohort$WEIGHT1[selected]
+        )
+      }, numeric(1))
+      missing_shares <- vapply(fields, function(field) {
+        100 * stats::weighted.mean(cohort[[field]] == code, cohort$WEIGHT1)
+      }, numeric(1))
+      if (identical(unname(round(means, 3)), printed_means) &&
+            identical(unname(round(missing_shares, 1)), printed_na)) {
+        matching <- c(matching, code)
+        expect_equal(sum(selected), if (item == "Q17") 949L else 948L)
+      }
+    }
+    expect_identical(matching, 98)
+  }
+  counts <- vapply(c("Q17", "Q18", "T2Q17", "T2Q18"), function(field) {
+    sum(survey[[field]] == 98, na.rm = TRUE)
+  }, integer(1))
+  expect_identical(unname(counts), c(92L, 134L, 13L, 16L))
+})
+
+
+test_that("New Haven interim labels distinguish DK from invalid zeros", {
+  source(project_path("R", "source_new_haven.R"))
+  items <- arrow::read_parquet(project_path(
+    "output", "analysis", "analysis_phase_item_responses.parquet"
+  )) |>
+    dplyr::filter(poll_id == "new-haven-2004", wave == "interim_1")
+  enriched <- enrich_knowledge_responses(items)
+  result <- standardize_knowledge_scores(enriched)$items
+  invalid <- result |> dplyr::filter(raw_value == 0)
+  expect_equal(nrow(invalid), 5L)
+  expect_setequal(invalid$respondent_id, c("3133", "3255", "3269"))
+  expect_true(all(invalid$wave_observed))
+  expect_true(all(is.na(invalid$correct)))
+  expect_true(all(invalid$response_reason == "invalid_response"))
+  expect_true(all(is.na(invalid$knowledge_response)))
+  dk <- result |> dplyr::filter(knowledge_response == "dk")
+  expect_equal(nrow(dk), 174L)
+  expect_true(all(dk$correct == 0L))
+  expect_true(all(dk$source_response_label == "Don't know"))
+  expect_false(any(dk$source_column == "mid_q36"))
+  expect_identical(result$raw_value, items$raw_value)
+  expect_identical(result$respondent_id, items$respondent_id)
+  expect_identical(result$wave_observed, items$wave_observed)
+
+  survey <- read_new_haven_workbook(project_path(
+    "data", "new-haven-2004", "source-materials", "survey-waves.xlsx"
+  ))
+  source <- dplyr::filter(survey, assigned %in% c(3133, 3255, 3269))
+  fields <- grep("^mid_q", names(source), value = TRUE)
+  expect_equal(length(fields), 55L)
+  expect_equal(rowSums(as.matrix(source[fields]) != 0), c(50, 54, 54))
+  expect_equal(result$raw_value, purrr::map2_dbl(
+    result$respondent_id, result$source_column,
+    \(id, field) survey[[field]][match(as.numeric(id), survey$assigned)]
+  ))
+  old_totals <- items |>
+    dplyr::group_by(respondent_id) |>
+    dplyr::summarise(score = sum(correct, na.rm = TRUE) / 8, .groups = "drop")
+  new_totals <- result |>
+    dplyr::group_by(respondent_id) |>
+    dplyr::summarise(score = sum(correct, na.rm = TRUE) / 8, .groups = "drop")
+  expect_identical(old_totals, new_totals)
+})

@@ -154,8 +154,9 @@ discussion group when observed; `cluster_id` is the inference cluster and is a
 village in Tanzania. Missing values mean the fact was not established in the
 available source, not that it did not occur. `panel` requires both selected
 comparison scores and retains the original sample restrictions. It does not
-define eligibility for every phase contrast. Tanzania respondent `1323`
-(`HHID == 240301`) has only a follow-up score and is outside the paired panel;
+define eligibility for every phase contrast. Tanzania respondent `240301`
+(native `HHID`; row identifier `1323` in the earlier export) has only a
+follow-up score and is outside the paired panel;
 the person and observed follow-up remain. The corrected panel has 1,857 people.
 For Cor–Sood respondents, group IDs come from the reviewed
 `output/memberships.parquet` on the same `(poll_id, respondent_id)` key. That
@@ -434,6 +435,15 @@ with unknown form presence. `value` is missing for all nonanswers and invalid
 responses. The 271 Marousi responses whose scale is not established remain
 `unclassified_response`, with missing numeric values. Vermont's 40 out-of-range
 responses remain `invalid_response`; their original codes are retained.
+
+Questionnaire presence is also established directly from a reviewed substantive
+source answer or an explicitly recorded DK or refusal. The shared rule groups rows by poll, source file, physical source
+row and literal source wave, independently of membership in an analysis cohort.
+It fills unknown presence for every attitude item on that form and classifies
+raw missing items as blanks. Explicit absence conflicting with a substantive
+answer stops the build. Empty forms, ambiguous combined nonanswer codes, derived values and administrative
+identifiers do not supply positive evidence under this rule. Source-only people
+remain source-only, and an unassigned interview phase remains unassigned.
 
 `unit`, `minimum` and `maximum` describe the source scale. `normalized_value`
 is supplied only when a reviewed numeric scale has two fixed endpoints.
