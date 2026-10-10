@@ -1,0 +1,34 @@
+{
+  "participant_sha256": "a05f552bd18c80a362cb58e8dd3a8289b39c19089552d3843960398954737e9e",
+  "output_sha256": "c683c22f5dc27399b3d1938ea52ffb6e9e5e0ad603d4d414b17c1c678e3d0dd1",
+  "rows": 4568,
+  "source_hashes": [
+    {
+      "source_path": "data/denmark-euro-2000/survey.parquet",
+      "source_sha256": "66ebb44e5b35c64e7b95ed9f93cee8b98f7350fea938c1b50d6955fc7d24a271"
+    },
+    {
+      "source_path": "data/northern-ireland-2007/survey.parquet",
+      "source_sha256": "ef80ee47074badf87c5b1ace2ec42fe3eacc37803291cfb2f659f4e332150ccb"
+    },
+    {
+      "source_path": "data/america-in-one-room-2019/participants.tab",
+      "source_sha256": "06134deebb34b08ffac91068727b55c1ec4dde88df5f388e1552b0bfa54c6818"
+    }
+  ],
+  "dictionary_hashes": [
+    {
+      "dictionary_path": "data/denmark-euro-2000/value-labels.csv",
+      "dictionary_sha256": "ff52ee83a0918671dff6c1847c001f610b83d6ff4db3684442e88bc4e5eebb42"
+    },
+    {
+      "dictionary_path": "data/northern-ireland-2007/value-labels.csv",
+      "dictionary_sha256": "5bf170055ce60f92dc6dd8dfd2d2ce097cfa2a77c42aaa9a1655906db3164804"
+    },
+    {
+      "dictionary_path": "data/america-in-one-room-2019/codebooks/a1r_codebook.tab",
+      "dictionary_sha256": "223f26e26f515c5312853222d3b5bafedb11dc82e8980ba165c6d4eb11cde04f"
+    }
+  ],
+  "recode_sha256": "d4a52d91c14fd175b9f5802d767bc30ce91dff3d1381d7d187da6dc4ae2fbd2f"
+}
