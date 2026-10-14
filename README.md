@@ -262,3 +262,7 @@ The canonical item table supplies `question_display`, `answer_choices_display`, 
 `correct_answer_display` for publications. These normalize all-capital source labels
 to sentence case, with reviewed proper names and abbreviation expansions; original
 text and scoring codes remain in their existing fields.
+
+<!-- adjacent:start -->
+
+<!-- adjacent:end -->
