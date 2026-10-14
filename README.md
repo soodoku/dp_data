@@ -265,4 +265,14 @@ text and scoring codes remain in their existing fields.
 
 <!-- adjacent:start -->
 
+## 🔗 Adjacent Repositories
+
+- [soodoku/dp_learning](https://github.com/soodoku/dp_learning) — Deliberation and Learning: Evidence From Deliberative Polls \(Luskin, Sood, Fishkin\)
+- [soodoku/dp_misinformation](https://github.com/soodoku/dp_misinformation) — Deliberation and Misinformation \(Luskin and Sood\). Data, code, and manuscript.
+- [soodoku/dp_distortions](https://github.com/soodoku/dp_distortions) — Replication Data and Scripts for Deliberative Distortions
+- [soodoku/dp_nireland](https://github.com/soodoku/dp_nireland) — Replication Data And Scripts for How Can You Think That?: Deliberation and the Learning of Opposing Arguments
+- [soodoku/dp_otherpk](https://github.com/soodoku/dp_otherpk) — Comparative analysis of congenial and uncongenial factual learning in Deliberative Polls
+
+_Powered by [Adjacent](https://github.com/gojiplus/adjacent)_
+
 <!-- adjacent:end -->
