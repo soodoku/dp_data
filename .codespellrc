@@ -1,0 +1,4 @@
+[codespell]
+builtin = clear,rare,en-GB_to_en-US
+skip = *.pdf,*.png,*.jpg,*.jpeg,*.gif,*.csv,*.tsv,*.json,*.geojson,*.graphml,*.ipynb,*.html,*.svg,*.bib,*.bbl,*.lock,*.parquet,*.rda,*.rds,*.RData,*.dta,*.xlsx,*.xml,*.min.js,*.map,*.log,*.aux,*.tab,./data,./docs/poll-evidence.md,./output,./renv
+ignore-words-list = busines,couldn,labelled,labour,meaned,olt,preserv,preven,recod,sav,summarise,te
