@@ -137,7 +137,7 @@ sample. This is not a complete roster reconstruction for every poll.
 missingness, denominator, source-wave and calibration policies. Their
 [input dependencies](../metadata/measure_inputs.csv) name source fields.
 `post_dependent` means any later-wave response enters the formula, including
-scores labelled as baseline knowledge but adjusted using post responses.
+scores labeled as baseline knowledge but adjusted using post responses.
 An explicitly absent historical measure has a constant-missing definition;
 an unimplemented measure has no fabricated values. `n_observed_fields` counts
 source fields classified as answered; it is **not** a universal scoring

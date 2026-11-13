@@ -216,7 +216,7 @@ The build uses the earlier 1,806-row `smdp 3-18-08.dta`, not the reduced
 `PARTICIPANTID` is unique; `RESPNUM` is not. Sorting the former reconstructs
 the battery order, and `GRP` supplies 26 groups.
 
-The archived post-wave recode compares two labelled answers with the text
+The archived post-wave recode compares two labeled answers with the text
 "5". Their labels instead describe 950,000 and more than 75%.
 The underlying code 5 is correct on both questions, as confirmed by the
 questionnaires and source correctness fields. The correction recovers 111
